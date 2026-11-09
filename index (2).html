@@ -1,0 +1,2704 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Stock Job Pro — V7.0 Cloud & Traceability</title>
+
+    <!-- GOOGLE FONTS -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet" crossorigin="anonymous">
+
+    <!-- LIBS (CDN) -->
+    <script src="https://cdn.jsdelivr.net/npm/dexie@4.0.1/dist/dexie.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vue@3.4.38/dist/vue.global.prod.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js" crossorigin="anonymous"></script>
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" crossorigin="anonymous" />
+
+    <style>
+        :root {
+            --font-family: 'Prompt', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
+            --bg-body: #f8fafc;
+            --bg-surface: #ffffff;
+            --bg-surface-hover: #f1f5f9;
+            --bg-input: #f8fafc;
+            --bg-sidebar: #ffffff;
+            --bg-sidebar-hover: #f1f5f9;
+            --border-color: #e2e8f0;
+            --border-color-strong: #cbd5e1;
+            --text-primary: #0f172a;
+            --text-secondary: #475569;
+            --text-muted: #94a3b8;
+            --text-on-primary: #ffffff;
+            --primary: #0d9488;
+            --primary-hover: #0f766e;
+            --primary-light: #d1fae5;
+            --primary-100: #ccfbf1;
+            --primary-700: #0f766e;
+            --warning: #f59e0b;
+            --warning-light: #fef3c7;
+            --warning-100: #fef3c7;
+            --warning-700: #92400e;
+            --danger: #ef4444;
+            --danger-light: #fee2e2;
+            --danger-100: #fee2e2;
+            --danger-700: #991b1b;
+            --success: #10b981;
+            --success-light: #d1fae5;
+            --success-500: #10b981;
+            --info-100: #dbeafe;
+            --info-700: #1e40af;
+            --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
+            --shadow-md: 0 4px 16px rgba(15, 23, 42, 0.06);
+            --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.10);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 18px;
+            --sidebar-width: 230px;
+            --transition: 0.2s ease;
+            --touch-target: 40px;
+        }
+
+        html[data-accent="blue"]   { --primary:#2563eb; --primary-hover:#1d4ed8; --primary-light:#dbeafe; --primary-100:#bfdbfe; --primary-700:#1d4ed8; }
+        html[data-accent="purple"] { --primary:#7c3aed; --primary-hover:#6d28d9; --primary-light:#ede9fe; --primary-100:#ddd6fe; --primary-700:#6d28d9; }
+        html[data-accent="green"]  { --primary:#16a34a; --primary-hover:#15803d; --primary-light:#dcfce7; --primary-100:#bbf7d0; --primary-700:#15803d; }
+        html[data-accent="amber"]  { --primary:#d97706; --primary-hover:#b45309; --primary-light:#fef3c7; --primary-100:#fde68a; --primary-700:#b45309; }
+        html[data-accent="rose"]   { --primary:#e11d48; --primary-hover:#be123c; --primary-light:#ffe4e6; --primary-100:#fecdd3; --primary-700:#be123c; }
+
+        html.dark {
+            --bg-body: #020617;
+            --bg-surface: #0f172a;
+            --bg-surface-hover: #1e293b;
+            --bg-input: #0b1222;
+            --bg-sidebar: #020617;
+            --bg-sidebar-hover: #0f172a;
+            --border-color: #1e293b;
+            --border-color-strong: #334155;
+            --text-primary: #f1f5f9;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --primary: #14b8a6;
+            --primary-hover: #2dd4bf;
+            --primary-light: #134e4a;
+            --primary-100: #134e4a;
+            --primary-700: #2dd4bf;
+            --warning: #fbbf24;
+            --warning-light: #451a03;
+            --warning-100: #451a03;
+            --warning-700: #fbbf24;
+            --danger: #f87171;
+            --danger-light: #450a0a;
+            --danger-100: #450a0a;
+            --danger-700: #f87171;
+            --info-100: #1e293b;
+            --info-700: #60a5fa;
+            --success: #34d399;
+            --success-light: #064e3b;
+            --success-500: #34d399;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { font-size: 14px; -webkit-tap-highlight-color: transparent; }
+        body { font-family: var(--font-family); background: var(--bg-body); color: var(--text-primary); min-height: 100vh; overflow-x: hidden; }
+        [v-cloak] { display: none !important; }
+        .font-mono { font-family: var(--font-mono); }
+
+        /* Utility */
+        .flex { display: flex; } .inline-flex { display: inline-flex; } .grid { display: grid; }
+        .items-center { align-items: center; } .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; } .justify-end { justify-content: flex-end; }
+        .flex-wrap { flex-wrap: wrap; } .flex-1 { flex: 1; } .flex-shrink-0 { flex-shrink: 0; }
+        .gap-1 { gap: 4px; } .gap-2 { gap: 8px; } .gap-3 { gap: 12px; } .gap-4 { gap: 16px; }
+        .mb-1 { margin-bottom: 4px; } .mb-2 { margin-bottom: 8px; } .mb-3 { margin-bottom: 12px; } .mb-4 { margin-bottom: 16px; }
+        .mt-1 { margin-top: 4px; } .mt-2 { margin-top: 8px; } .mt-3 { margin-top: 12px; } .mt-4 { margin-top: 16px; }
+        .mr-1 { margin-right: 4px; } .ml-1 { margin-left: 4px; } .ml-auto { margin-left: auto; }
+        .p-2 { padding: 8px; } .p-3 { padding: 12px; } .p-4 { padding: 16px; }
+        .px-2 { padding-left: 8px; padding-right: 8px; } .px-3 { padding-left: 12px; padding-right: 12px; }
+        .py-1 { padding-top: 4px; padding-bottom: 4px; } .py-2 { padding-top: 8px; padding-bottom: 8px; }
+        .py-4 { padding-top: 16px; padding-bottom: 16px; } .py-6 { padding-top: 24px; padding-bottom: 24px; }
+        .w-full { width: 100%; } .min-w-0 { min-width: 0; }
+        .text-xs { font-size: 12px; } .text-sm { font-size: 13px; } .text-base { font-size: 14px; } .text-lg { font-size: 16px; }
+        .font-medium { font-weight: 500; } .font-semibold { font-weight: 600; } .font-bold { font-weight: 700; }
+        .text-center { text-align: center; } .text-right { text-align: right; }
+        .text-primary { color: var(--primary); } .text-secondary { color: var(--text-secondary); } .text-muted { color: var(--text-muted); }
+        .truncate { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .rounded { border-radius: var(--radius-sm); } .rounded-lg { border-radius: var(--radius-md); } .rounded-full { border-radius: 40px; }
+        .border { border: 1px solid var(--border-color); }
+        .bg-body { background: var(--bg-body); } .bg-surface { background: var(--bg-surface); } .bg-input { background: var(--bg-input); }
+        .space-y-1 > * + * { margin-top: 4px; } .space-y-2 > * + * { margin-top: 8px; } .space-y-3 > * + * { margin-top: 12px; }
+        .grid-cols-2 { grid-template-columns: 1fr 1fr; } .col-span-2 { grid-column: span 2; }
+
+        /* Layout */
+        .app-layout { display: flex; min-height: 100vh; max-width: 1440px; margin: 0 auto; width: 100%; }
+        .sidebar { position: sticky; top: 0; height: 100vh; width: var(--sidebar-width); background: var(--bg-sidebar); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; flex-shrink: 0; z-index: 40; padding: 0 12px; }
+        .sidebar-brand { display: flex; align-items: center; gap: 8px; padding: 16px 8px; border-bottom: 1px solid var(--border-color); font-weight: 700; font-size: 17px; color: var(--primary); }
+        .sidebar-brand span { color: var(--text-primary); }
+        .sidebar-brand small { font-size: 10px; font-weight: 600; color: var(--primary); background: var(--primary-100); padding: 2px 8px; border-radius: 20px; }
+        .sidebar-nav { flex: 1; padding: 14px 0; display: flex; flex-direction: column; gap: 3px; overflow-y: auto; }
+        .sidebar-nav .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--radius-sm); color: var(--text-secondary); font-weight: 500; font-size: 13px; cursor: pointer; border: none; background: transparent; width: 100%; text-align: left; transition: var(--transition); }
+        .sidebar-nav .nav-item:hover { background: var(--bg-sidebar-hover); color: var(--text-primary); }
+        .sidebar-nav .nav-item.active { background: var(--primary-100); color: var(--primary-700); font-weight: 600; }
+        .sidebar-nav .nav-item i { width: 18px; text-align: center; font-size: 14px; }
+        .sidebar-nav .nav-item .badge { margin-left: auto; font-size: 10px; background: var(--bg-surface-hover); padding: 1px 7px; border-radius: 20px; color: var(--text-secondary); }
+        .sidebar-nav .nav-item.active .badge { background: var(--primary); color: #fff; }
+        .sidebar-footer { border-top: 1px solid var(--border-color); padding: 10px 0; display: flex; flex-direction: column; gap: 2px; }
+        .sidebar-footer .footer-btn { display: flex; align-items: center; gap: 10px; padding: 7px 12px; border-radius: var(--radius-sm); color: var(--text-secondary); font-size: 12.5px; font-weight: 500; cursor: pointer; border: none; background: transparent; width: 100%; text-align: left; }
+        .sidebar-footer .footer-btn:hover { background: var(--bg-sidebar-hover); color: var(--text-primary); }
+
+        .main-content { flex: 1; min-width: 0; padding: 0 24px 36px 24px; display: flex; flex-direction: column; }
+        .topbar { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border-color); margin-bottom: 18px; gap: 10px; position: sticky; top: 0; background: var(--bg-body); z-index: 25; flex-wrap: wrap; }
+        .topbar-left { display: flex; align-items: center; gap: 10px; }
+        .topbar-left .hamburger { display: none; background: none; border: none; font-size: 19px; color: var(--text-secondary); cursor: pointer; padding: 6px; }
+        .topbar-left .page-title { font-size: 18px; font-weight: 700; color: var(--text-primary); }
+        .topbar-right { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+        /* Sync Status Pill */
+        .sync-pill { display: inline-flex; align-items: center; gap: 6px; padding: 5px 12px; border-radius: 40px; font-size: 12px; font-weight: 600; border: 1px solid var(--border-color); background: var(--bg-surface); cursor: pointer; transition: var(--transition); }
+        .sync-pill:hover { border-color: var(--primary); }
+        .sync-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+        .sync-dot.online { background: #10b981; box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2); }
+        .sync-dot.syncing { background: #f59e0b; animation: pulse 1s infinite; }
+        .sync-dot.offline { background: #94a3b8; }
+        .sync-dot.error { background: #ef4444; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.35; } }
+
+        .search-box { position: relative; width: 210px; }
+        .search-box input { width: 100%; padding: 7px 12px 7px 32px; border: 1px solid var(--border-color); border-radius: 40px; font-size: 13px; background: var(--bg-surface); color: var(--text-primary); outline: none; font-family: var(--font-family); }
+        .search-box input:focus { border-color: var(--primary); }
+        .search-box i { position: absolute; left: 11px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 12px; }
+
+        .page-container { display: none; }
+        .page-container.active { display: block; animation: fadeIn 0.18s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Cards & Stats */
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 18px; }
+        .stat-card { background: var(--bg-surface); border-radius: var(--radius-md); padding: 14px 16px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); transition: var(--transition); }
+        .stat-card.clickable { cursor: pointer; }
+        .stat-card.clickable:hover { transform: translateY(-2px); box-shadow: var(--shadow-md); border-color: var(--primary); }
+        .stat-card .label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.3px; }
+        .stat-card .value { font-size: 24px; font-weight: 700; color: var(--text-primary); margin-top: 2px; font-family: var(--font-mono); }
+        .stat-card .value.teal { color: var(--primary); }
+        .stat-card .value.amber { color: var(--warning); }
+        .stat-card .value.red { color: var(--danger); }
+        .stat-card .value.green { color: var(--success); }
+
+        .dash-grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 18px; }
+        .dash-card { background: var(--bg-surface); border-radius: var(--radius-md); padding: 16px 18px; border: 1px solid var(--border-color); box-shadow: var(--shadow-sm); }
+        .dash-card .card-title { font-size: 13.5px; font-weight: 600; color: var(--text-secondary); margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; }
+        .dash-card .card-title .badge { font-size: 10.5px; font-weight: 500; background: var(--bg-body); padding: 2px 10px; border-radius: 20px; color: var(--text-muted); }
+        .dash-card .chart-container { height: 165px; position: relative; }
+
+        /* Buttons & Chips */
+        .btn-primary { padding: 7px 15px; background: var(--primary); color: #fff; border: none; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-family); transition: var(--transition); }
+        .btn-primary:hover { background: var(--primary-hover); }
+        .btn-secondary { padding: 7px 14px; background: var(--bg-surface); color: var(--text-secondary); border: 1px solid var(--border-color); border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-family); transition: var(--transition); }
+        .btn-secondary:hover { background: var(--bg-surface-hover); color: var(--text-primary); }
+        .btn-danger { padding: 7px 14px; background: var(--danger-light); color: var(--danger-700); border: none; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-family); }
+        .btn-success { padding: 7px 14px; background: var(--success-light); color: #065f46; border: none; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-family); }
+        .btn-sm { padding: 4px 10px; font-size: 11.5px; border-radius: 6px; }
+        .filter-chip { padding: 5px 13px; border-radius: 40px; font-size: 12px; font-weight: 600; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-secondary); cursor: pointer; transition: var(--transition); white-space: nowrap; font-family: var(--font-family); }
+        .filter-chip:hover { background: var(--bg-surface-hover); }
+        .filter-chip.active { background: var(--primary); border-color: var(--primary); color: #fff; }
+
+        /* Stock Card List - Upgraded Enterprise Design */
+        .stock-group-header { font-size: 12.5px; font-weight: 700; color: var(--primary); text-transform: uppercase; letter-spacing: .04em; padding: 14px 4px 8px 4px; display: flex; align-items: center; gap: 6px; }
+        .stock-card { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 16px 18px; margin-bottom: 12px; box-shadow: var(--shadow-sm); cursor: pointer; transition: all 0.2s ease; position: relative; }
+        .stock-card:hover { box-shadow: var(--shadow-md); border-color: var(--primary); transform: translateY(-1px); }
+        .stock-card-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+        .stock-card-code { font-family: var(--font-mono); font-size: 12px; font-weight: 700; color: var(--primary); display: inline-flex; align-items: center; gap: 6px; background: var(--primary-100); padding: 2px 9px; border-radius: 6px; }
+        .stock-card-name { font-size: 15px; font-weight: 700; color: var(--text-primary); margin-top: 6px; }
+        .stock-card-meta { font-size: 12px; color: var(--text-secondary); margin-top: 5px; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+        .stock-card-batches { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; padding-top: 8px; border-top: 1px dashed var(--border-color); }
+        .batch-pill { display: inline-flex; align-items: center; gap: 5px; font-family: var(--font-mono); font-size: 11px; background: var(--bg-body); border: 1px solid var(--border-color); padding: 3px 9px; border-radius: 6px; color: var(--text-secondary); }
+        .batch-pill strong { color: var(--primary); }
+        .stock-card-stat { text-align: right; flex-shrink: 0; }
+        .stock-card-balance { font-family: var(--font-mono); font-size: 24px; font-weight: 700; color: var(--text-primary); line-height: 1; }
+        .status-pill { display: inline-block; margin-top: 6px; font-size: 10.5px; font-weight: 600; padding: 2px 10px; border-radius: 40px; }
+        .status-pill.ok { background: var(--success-light); color: #065f46; }
+        .status-pill.low { background: var(--warning-100); color: var(--warning-700); }
+        .status-pill.out { background: var(--danger-100); color: var(--danger-700); }
+        .stock-card-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--border-color); }
+        .icon-action { flex: 1; min-width: 105px; display: flex; align-items: center; justify-content: center; gap: 5px; height: 34px; border-radius: var(--radius-sm); border: 1px solid var(--border-color); background: var(--bg-body); color: var(--text-secondary); font-size: 12px; font-weight: 600; cursor: pointer; font-family: var(--font-family); transition: var(--transition); }
+        .icon-action:hover { background: var(--bg-surface-hover); color: var(--text-primary); border-color: var(--primary); }
+        .icon-action.transfer-highlight { background: var(--warning-100); color: var(--warning-700); border-color: #fde68a; }
+        .icon-action.transfer-highlight:hover { filter: brightness(0.96); border-color: var(--warning); }
+
+        /* Batch Transfer Visual Box */
+        .transfer-visual-grid { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; background: var(--bg-body); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color); margin-bottom: 14px; }
+        .transfer-lot-card { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-sm); padding: 10px 12px; }
+        .transfer-lot-card .lot-title { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 4px; }
+        .transfer-lot-card .lot-num { font-family: var(--font-mono); font-size: 16px; font-weight: 700; }
+        .qty-quick-btns { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+        .qty-quick-btn { padding: 3px 10px; font-size: 11.5px; font-weight: 600; border-radius: 6px; border: 1px solid var(--border-color); background: var(--bg-surface); color: var(--text-secondary); cursor: pointer; }
+        .qty-quick-btn:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* Summary Grid for Analytics */
+        .summary-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 16px; }
+        @media (max-width: 900px) { .summary-grid-3 { grid-template-columns: 1fr; } .transfer-visual-grid { grid-template-columns: 1fr; } }
+
+        /* Jobs */
+        .job-card { background: var(--bg-surface); border-radius: var(--radius-md); padding: 14px 18px; border: 1px solid var(--border-color); border-left-width: 4px; box-shadow: var(--shadow-sm); margin-bottom: 12px; }
+        .job-card .job-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+        .job-doc-badge { font-family: var(--font-mono); font-size: 11.5px; font-weight: 600; background: var(--primary-100); color: var(--primary-700); padding: 2px 8px; border-radius: 6px; }
+        .job-status { font-size: 11px; font-weight: 600; padding: 2px 10px; border-radius: 40px; }
+        .job-status.pending { background: var(--warning-light); color: var(--warning-700); }
+        .job-status.shipped { background: var(--success-light); color: #065f46; }
+        .job-status.cancelled { background: var(--danger-light); color: var(--danger-700); }
+        .job-actions { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; padding-top: 10px; border-top: 1px solid var(--border-color); }
+
+        /* Traceability & Stock Card History Table */
+        .history-filters { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin-bottom: 14px; background: var(--bg-surface); padding: 14px; border-radius: var(--radius-md); border: 1px solid var(--border-color); }
+        .history-filters .filter-group { display: flex; flex-direction: column; gap: 4px; }
+        .history-filters .filter-group label { font-size: 11px; font-weight: 600; color: var(--text-muted); text-transform: uppercase; }
+        .history-filters input, .history-filters select { padding: 7px 10px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-input); font-size: 12.5px; color: var(--text-primary); outline: none; font-family: var(--font-family); }
+        .history-table-wrap { overflow-x: auto; border-radius: var(--radius-md); border: 1px solid var(--border-color); background: var(--bg-surface); box-shadow: var(--shadow-sm); }
+        .history-table-wrap table { width: 100%; border-collapse: collapse; font-size: 12.5px; min-width: 860px; }
+        .history-table-wrap th { text-align: left; padding: 10px 12px; background: var(--bg-body); font-weight: 600; font-size: 11px; text-transform: uppercase; color: var(--text-secondary); border-bottom: 1px solid var(--border-color); }
+        .history-table-wrap td { padding: 9px 12px; border-bottom: 1px solid var(--border-color); vertical-align: middle; }
+        .history-table-wrap tr:hover td { background: var(--bg-surface-hover); }
+        .tx-badge { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 600; padding: 2px 8px; border-radius: 20px; }
+        .tx-badge.in { background: var(--success-light); color: #065f46; }
+        .tx-badge.out { background: var(--danger-100); color: var(--danger-700); }
+        .tx-badge.adjust { background: var(--warning-100); color: var(--warning-700); }
+        .ref-chip { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-mono); font-size: 11.5px; font-weight: 600; color: var(--primary-700); background: var(--primary-100); padding: 2px 8px; border-radius: 6px; cursor: pointer; border: none; }
+        .ref-chip:hover { filter: brightness(0.95); text-decoration: underline; }
+        .lot-chip { display: inline-flex; align-items: center; gap: 4px; font-family: var(--font-mono); font-size: 11px; background: var(--bg-body); border: 1px solid var(--border-color); padding: 2px 7px; border-radius: 6px; cursor: pointer; color: var(--text-secondary); }
+        .lot-chip:hover { border-color: var(--primary); color: var(--primary); }
+
+        /* Forms & Modals */
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-bottom: 4px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: var(--radius-sm); background: var(--bg-input); font-size: 13px; color: var(--text-primary); outline: none; font-family: var(--font-family); }
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--primary); }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.55); backdrop-filter: blur(4px); z-index: 100; display: flex; align-items: center; justify-content: center; padding: 16px; }
+        .modal-box { background: var(--bg-surface); border-radius: var(--radius-lg); max-width: 680px; width: 100%; max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); border: 1px solid var(--border-color); }
+        .modal-header { padding: 14px 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; background: var(--bg-surface); z-index: 2; }
+        .modal-header .title { font-size: 15.5px; font-weight: 700; color: var(--text-primary); }
+        .modal-header .close-btn { background: none; border: none; font-size: 22px; color: var(--text-muted); cursor: pointer; padding: 0 6px; }
+        .modal-body { padding: 18px 20px; }
+
+        .alert-box { padding: 10px 14px; border-radius: var(--radius-md); display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; font-size: 12.5px; font-weight: 500; }
+        .alert-box.warning { background: var(--warning-light); border: 1px solid var(--warning); color: var(--warning-700); }
+        .alert-box.danger { background: var(--danger-light); border: 1px solid var(--danger); color: var(--danger-700); }
+        .alert-box.info { background: var(--primary-100); border: 1px solid var(--primary); color: var(--primary-700); }
+
+        .list-item { padding: 6px 0; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; font-size: 13px; }
+        .list-item:last-child { border-bottom: none; }
+
+        /* Customer Cards */
+        .customer-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(270px, 1fr)); gap: 12px; }
+        .customer-card { position: relative; display: flex; gap: 12px; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 14px; box-shadow: var(--shadow-sm); cursor: pointer; transition: var(--transition); }
+        .customer-card:hover { box-shadow: var(--shadow-md); border-color: var(--primary); }
+        .customer-card-avatar { flex-shrink: 0; width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 700; font-size: 14px; }
+
+        /* Settings */
+        .settings-section { background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: var(--radius-lg); padding: 16px 18px; margin-bottom: 14px; }
+        .settings-section-title { font-size: 12.5px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase; margin-bottom: 12px; }
+        .settings-row { display: flex; align-items: center; justify-content: space-between; padding: 9px 0; border-top: 1px solid var(--border-color); }
+        .settings-row:first-of-type { border-top: none; }
+        .accent-swatch { width: 34px; height: 34px; border-radius: 50%; cursor: pointer; border: 3px solid transparent; display: inline-flex; align-items: center; justify-content: center; margin-right: 8px; color: #fff; }
+        .accent-swatch.selected { border-color: var(--text-primary); }
+
+        .toast-container { position: fixed; bottom: 88px; left: 50%; transform: translateX(-50%); z-index: 250; background: var(--bg-surface); border: 1px solid var(--border-color); border-left-width: 4px; border-radius: var(--radius-md); padding: 10px 20px; box-shadow: var(--shadow-lg); font-weight: 500; font-size: 13.5px; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+        .toast-container.show { opacity: 1; pointer-events: all; }
+        .toast-container.success { border-left-color: var(--success); }
+        .toast-container.error { border-left-color: var(--danger); }
+        .toast-container.warning { border-left-color: var(--warning); }
+
+        .fab { position: fixed; bottom: 24px; right: 24px; z-index: 50; width: 52px; height: 52px; border-radius: 50%; background: var(--primary); color: #fff; border: none; box-shadow: var(--shadow-lg); font-size: 22px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+        .fab-menu { position: fixed; bottom: 84px; right: 24px; z-index: 49; display: flex; flex-direction: column; gap: 6px; align-items: flex-end; opacity: 0; pointer-events: none; transition: var(--transition); }
+        .fab-menu.open { opacity: 1; pointer-events: all; }
+        .fab-menu .btn { padding: 7px 15px; border-radius: 40px; background: var(--bg-surface); border: 1px solid var(--border-color); box-shadow: var(--shadow-md); font-size: 12.5px; font-weight: 500; color: var(--text-primary); cursor: pointer; display: flex; align-items: center; gap: 6px; }
+
+        .bottom-nav { display: none; }
+        @media (max-width: 900px) {
+            .stats-grid { grid-template-columns: repeat(2, 1fr); }
+            .dash-grid-2 { grid-template-columns: 1fr; }
+            .history-filters { grid-template-columns: 1fr 1fr; }
+        }
+        @media (max-width: 768px) {
+            .sidebar { position: fixed; left: 0; top: 0; transform: translateX(-100%); transition: transform 0.25s ease; z-index: 95; }
+            .sidebar.open { transform: translateX(0); }
+            .sidebar-overlay { position: fixed; inset: 0; background: rgba(15,23,42,0.45); z-index: 90; display: none; }
+            .sidebar-overlay.open { display: block; }
+            .topbar-left .hamburger { display: block; }
+            .main-content { padding: 0 14px 84px 14px; }
+            .bottom-nav { display: flex; position: fixed; left: 0; right: 0; bottom: 0; z-index: 80; background: var(--bg-surface); border-top: 1px solid var(--border-color); padding: 6px 4px; }
+            .bottom-nav-item { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 2px; padding: 5px 2px; border: none; background: transparent; color: var(--text-muted); font-size: 10.5px; font-weight: 500; cursor: pointer; font-family: var(--font-family); }
+            .bottom-nav-item.active { color: var(--primary); font-weight: 600; }
+            .bottom-nav-item i { font-size: 16px; }
+            .fab { bottom: 76px; right: 16px; }
+            .fab-menu { bottom: 136px; right: 16px; }
+            .form-row { grid-template-columns: 1fr; }
+        }
+    </style>
+<style data-link-removed-style>a[data-link-removed],a[href*="zPythonSafez"]:not([onclick]){pointer-events:none!important;cursor:default!important;opacity:.6}</style></head>
+<body>
+    <div id="toast" class="toast-container"></div>
+
+    <div id="app" class="app-layout" v-cloak>
+        <div class="sidebar-overlay" :class="{ open: sidebarOpen }" @click="sidebarOpen = false"></div>
+
+        <!-- SIDEBAR -->
+        <aside class="sidebar" :class="{ open: sidebarOpen }">
+            <div class="sidebar-brand">
+                <i class="fas fa-cubes"></i>
+                <span>Stock</span> Pro
+                <small>v7.0 Cloud</small>
+            </div>
+            <nav class="sidebar-nav">
+                <button v-for="(tab, idx) in tabs" :key="idx" class="nav-item" :class="{ active: currentTab === idx }" @click="goToTab(idx)">
+                    <i :class="tab.icon"></i>
+                    {{ tab.label }}
+                    <span v-if="idx === 2 && jobCounts.pending > 0" class="badge">{{ jobCounts.pending }}</span>
+                </button>
+            </nav>
+            <div class="sidebar-footer">
+                <button class="footer-btn" @click="openModal('cloudSync')">
+                    <i class="fas fa-cloud"></i> ตั้งค่า Cloud Sync
+                </button>
+                <button class="footer-btn" @click="openModal('backup')">
+                    <i class="fas fa-database"></i> สำรองข้อมูล (.json)
+                </button>
+                <button class="footer-btn" @click="toggleTheme">
+                    <i class="fas" :class="themeMode === 'dark' ? 'fa-sun' : 'fa-moon'"></i>
+                    {{ themeMode === 'dark' ? 'โหมดสว่าง (Light)' : 'โหมดมืด (Dark)' }}
+                </button>
+            </div>
+        </aside>
+
+        <!-- MAIN CONTENT -->
+        <main class="main-content">
+            <!-- TOPBAR -->
+            <div class="topbar">
+                <div class="topbar-left">
+                    <button class="hamburger" @click="sidebarOpen = !sidebarOpen"><i class="fas fa-bars"></i></button>
+                    <span class="page-title">{{ tabs[currentTab]?.label }}</span>
+                </div>
+                <div class="topbar-right">
+                    <!-- Cloud Auto-Sync Status Pill -->
+                    <button class="sync-pill" @click="openModal('cloudSync')" title="คลิกเพื่อตั้งค่าการซิงค์ข้อมูลอัตโนมัติผ่าน Supabase (ฟรี)">
+                        <span class="sync-dot" :class="cloudState.status"></span>
+                        <span>{{ cloudStatusText }}</span>
+                        <span v-if="cloudState.lastSyncTs" class="text-xs text-muted">({{ formatTime(cloudState.lastSyncTs) }})</span>
+                    </button>
+
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" v-model="globalSearch" @keydown.enter="globalSearchEnter" placeholder="ค้นหา SKU / ล็อต / ใบงาน..." />
+                    </div>
+                    <button class="btn-primary" @click="openModal('job')">
+                        <i class="fas fa-plus"></i> ใบงานเบิก/จ่าย
+                    </button>
+                </div>
+            </div>
+
+            <!-- ===== PAGE 0: DASHBOARD ===== -->
+            <div class="page-container" :class="{ active: currentTab === 0 }">
+                <div v-if="!cloudState.enabled" class="alert-box info mb-3">
+                    <span>☁️ <strong>โหมดใช้งานในเครื่อง (Local IndexedDB):</strong> หากต้องการซิงค์ข้อมูลข้ามมือถือ/คอมพิวเตอร์อัตโนมัติฟรี สามารถผูก <strong>Supabase (Free Tier)</strong> ได้ทันที</span>
+                    <button class="btn-primary btn-sm" @click="openModal('cloudSync')"><i class="fas fa-cloud-upload-alt"></i> ผูก Supabase ฟรี</button>
+                </div>
+
+                <div v-if="expiryAlerts.length > 0" class="mb-3 space-y-1">
+                    <div v-for="a in expiryAlerts.slice(0, 3)" :key="a.id" class="alert-box" :class="a.daysLeft < 0 ? 'danger' : 'warning'">
+                        <span><strong>{{ a.itemCode }}</strong> (Lot: {{ a.lotNo || '-' }} · MFG {{ a.mfgDate }}) — {{ a.daysLeft < 0 ? `หมดอายุแล้ว ${Math.abs(a.daysLeft)} วัน` : `จะหมดอายุใน ${a.daysLeft} วัน` }}</span>
+                        <button class="btn-secondary btn-sm" @click="openDetail(a.itemId)">ตรวจสอบล็อต</button>
+                    </div>
+                </div>
+
+                <div class="stats-grid">
+                    <div class="stat-card clickable" @click="goToStockWithFilter('')">
+                        <div class="label">📦 สินค้าทั้งหมด (SKU)</div>
+                        <div class="value">{{ activeItems.length }}</div>
+                        <div class="text-xs text-muted mt-1">คลิกเพื่อดูรายการทั้งหมด</div>
+                    </div>
+                    <div class="stat-card clickable" @click="goToStockWithFilter('มีสต็อก')">
+                        <div class="label">✅ พร้อมจ่าย (ปกติ)</div>
+                        <div class="value teal">{{ stockStats.inStock }}</div>
+                        <div class="text-xs text-muted mt-1">สูงกว่าจุดสั่งซื้อ (Min Stock)</div>
+                    </div>
+                    <div class="stat-card clickable" @click="goToStockWithFilter('เหลือน้อย')">
+                        <div class="label">⚠️ เหลือน้อย (ต่ำกว่าเกณฑ์)</div>
+                        <div class="value amber">{{ stockStats.lowStock }}</div>
+                        <div class="text-xs text-muted mt-1">ต่ำกว่าค่า Min Stock รายสินค้า</div>
+                    </div>
+                    <div class="stat-card clickable" @click="goToStockWithFilter('หมดสต็อก')">
+                        <div class="label">❌ หมดสต็อก</div>
+                        <div class="value red">{{ stockStats.outOfStock }}</div>
+                        <div class="text-xs text-muted mt-1">ยอดคงเหลือเป็น 0</div>
+                    </div>
+                </div>
+
+                <div class="dash-grid-2">
+                    <div class="dash-card">
+                        <div class="card-title">📊 การเคลื่อนไหวรับเข้า / จ่ายออก 7 วันล่าสุด <span class="badge">รายวัน</span></div>
+                        <div class="chart-container"><canvas id="dashChart"></canvas></div>
+                    </div>
+                    <div class="dash-card">
+                        <div class="card-title">📦 สัดส่วนสถานะสต็อก <span class="badge">ตามเกณฑ์ Min Stock</span></div>
+                        <div class="chart-container" style="height:140px;"><canvas id="donutChart"></canvas></div>
+                        <div class="flex items-center justify-center gap-4 text-xs mt-2 text-secondary">
+                            <span>🟢 ปกติ ({{ stockStats.inStock }})</span>
+                            <span>🟡 เหลือน้อย ({{ stockStats.lowStock }})</span>
+                            <span>🔴 หมด ({{ stockStats.outOfStock }})</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dash-grid-2">
+                    <div class="dash-card">
+                        <div class="card-title">🏆 สินค้าจ่ายออกสูงสุด Top 5 <span class="badge">30 วัน</span></div>
+                        <div v-for="(item, idx) in topProducts" :key="idx" class="list-item">
+                            <span><strong>#{{ idx + 1 }}</strong> {{ item.code }}</span>
+                            <span class="font-mono font-semibold text-primary">{{ formatNum(item.totalQty) }} หน่วย</span>
+                        </div>
+                        <div v-if="topProducts.length === 0" class="text-muted text-sm py-4 text-center">ยังไม่มีประวัติการจ่ายออก</div>
+                    </div>
+                    <div class="dash-card">
+                        <div class="card-title">📜 รายการเดินสต็อกล่าสุด (คลิกเลขใบงานเพื่อตรวจสอบ) <span class="badge" style="cursor:pointer;color:var(--primary);" @click="goToTab(4)">ดูทั้งหมด →</span></div>
+                        <div v-for="tx in recentTransactions" :key="tx.id" class="list-item text-xs">
+                            <span class="text-muted font-mono">{{ formatDateTime(tx.ts) }}</span>
+                            <span class="font-semibold">{{ tx.itemCode }}</span>
+                            <span :class="tx.qty >= 0 ? 'text-primary font-bold' : ' style=color:var(--danger) font-bold'">{{ tx.qty > 0 ? '+' : '' }}{{ formatNum(tx.qty) }}</span>
+                            <span class="text-muted">คงเหลือ <strong>{{ formatNum(tx.balanceAfter) }}</strong></span>
+                            <button v-if="tx.ref" class="ref-chip" @click="inspectReference(tx.ref)">{{ tx.ref }}</button>
+                        </div>
+                        <div v-if="recentTransactions.length === 0" class="text-muted text-sm py-4 text-center">ยังไม่มีรายการเคลื่อนไหว</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== PAGE 1: STOCK ===== -->
+            <div class="page-container" :class="{ active: currentTab === 1 }">
+                <div class="flex flex-wrap gap-2 mb-3 items-center">
+                    <input type="text" v-model="stockSearch" placeholder="ค้นหา SKU / ชื่อเคมี / สี-ลายฟอยล์ / คลัง..." class="flex-1 px-3 py-2 border rounded-lg text-sm bg-surface" />
+                    <select v-model="stockStatusFilter" class="px-3 py-2 border rounded-lg text-sm bg-surface">
+                        <option value="">ทุกสถานะ</option>
+                        <option value="มีสต็อก">มีสต็อก</option>
+                        <option value="เหลือน้อย">เหลือน้อย (ต่ำกว่าเกณฑ์)</option>
+                        <option value="หมดสต็อก">หมดสต็อก</option>
+                    </select>
+                    <button class="btn-primary" @click="openModal('product')"><i class="fas fa-plus"></i> เพิ่ม SKU</button>
+                    <button class="btn-secondary" @click="openModal('transaction')"><i class="fas fa-exchange-alt"></i> รับเข้า / ปรับยอด</button>
+                </div>
+
+                <div class="flex items-center gap-2 mb-3 flex-wrap">
+                    <button class="filter-chip" :class="{ active: stockTypeFilter === '' }" @click="stockTypeFilter = ''">ทั้งหมด ({{ activeItems.length }})</button>
+                    <button class="filter-chip" :class="{ active: stockTypeFilter === 'เคมีภัณฑ์' }" @click="stockTypeFilter = 'เคมีภัณฑ์'">🧪 เคมีภัณฑ์</button>
+                    <button class="filter-chip" :class="{ active: stockTypeFilter === 'ฟอยล์' }" @click="stockTypeFilter = 'ฟอยล์'">📄 ฟอยล์</button>
+                </div>
+
+                <div class="stock-card-list">
+                    <template v-for="(item, idx) in filteredStockItems" :key="item.id">
+                        <div v-if="idx === 0 || item.type !== filteredStockItems[idx - 1].type" class="stock-group-header">
+                            {{ item.type === 'เคมีภัณฑ์' ? '🧪 เคมีภัณฑ์ (Chemicals)' : '📄 ฟอยล์ (Foils)' }}
+                        </div>
+                        <div class="stock-card" @click="openDetail(item.id)">
+                            <div class="stock-card-top">
+                                <div class="flex-1 min-w-0">
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <span class="stock-card-code"><i class="fas fa-barcode"></i> {{ item.code }}</span>
+                                        <span class="text-xs text-muted">({{ item.unitLabel || 'หน่วย' }})</span>
+                                        <span v-if="item.tankColor" class="text-xs px-2 py-0.5 rounded bg-body border font-medium">🎨 {{ item.tankColor }}</span>
+                                    </div>
+                                    <div class="stock-card-name">{{ itemDisplayName(item) }}</div>
+                                    <div class="stock-card-meta">
+                                        <span><i class="fas fa-warehouse text-primary"></i> {{ itemLocationOrSize(item) }}</span>
+                                        <span><i class="fas fa-layer-group text-primary"></i> {{ item.batchCount }} ล็อตคงเหลือ</span>
+                                        <span><i class="fas fa-bell text-muted"></i> เตือนเมื่อต่ำกว่า {{ formatNum(item.minStock ?? 10) }}</span>
+                                        <span v-if="item.reserved > 0" style="color:var(--warning-700);font-weight:600;">⏳ จองในใบงาน: {{ formatNum(item.reserved) }}</span>
+                                    </div>
+                                    <!-- แสดงล็อตย่อยบนการ์ดทันที เพื่อดูว่าล็อตปนกันหรือไม่ -->
+                                    <div v-if="getBatches(item.id).length > 0" class="stock-card-batches" @click.stop>
+                                        <span v-for="b in getBatches(item.id)" :key="b.id" class="batch-pill" @click="traceBatchHistory(b.id)" title="คลิกเพื่อดูประวัติการจ่ายของล็อตนี้">
+                                            <i class="fas fa-tag text-muted"></i> MFG {{ b.mfgDate }}{{ b.lotNo ? ` (${b.lotNo})` : '' }}: <strong>{{ formatNum(b.qtyRemaining) }}</strong>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="stock-card-stat">
+                                    <div class="stock-card-balance">{{ formatNum(item.balance) }}</div>
+                                    <div class="text-xs text-muted mt-1">{{ item.unitLabel || 'หน่วย' }}</div>
+                                    <span class="status-pill" :class="{ ok: item.status === 'มีสต็อก', low: item.status === 'เหลือน้อย', out: item.status === 'หมดสต็อก' }">{{ item.status }}</span>
+                                </div>
+                            </div>
+                            <div class="stock-card-actions" @click.stop>
+                                <button class="icon-action" @click="openModal('transaction', item.id)"><i class="fas fa-plus-circle text-primary"></i> รับเข้า / ปรับยอด</button>
+                                <button class="icon-action transfer-highlight" @click="openTransferModal(item.id)" title="ย้ายหรือแยกล็อตที่ปนกัน"><i class="fas fa-random"></i> ย้าย/แยกล็อต</button>
+                                <button class="icon-action" @click="traceProductHistory(item.code)"><i class="fas fa-book-open"></i> บัตรคุมสต็อก</button>
+                                <button class="icon-action" @click="openModal('product', item.id)"><i class="fas fa-edit"></i> แก้ไข</button>
+                                <button class="icon-action" style="flex:0 0 38px;min-width:38px;" @click="deleteProduct(item.id)" title="ลบสินค้า"><i class="fas fa-trash text-muted"></i></button>
+                            </div>
+                        </div>
+                    </template>
+                    <div v-if="filteredStockItems.length === 0" class="text-center py-6 text-muted">ไม่พบรายการสินค้า</div>
+                </div>
+            </div>
+
+            <!-- ===== PAGE 2: JOBS (ใบงานเบิก/จ่าย) ===== -->
+            <div class="page-container" :class="{ active: currentTab === 2 }">
+                <div class="flex flex-wrap gap-2 mb-3 items-center">
+                    <button class="btn-primary" @click="openModal('job')"><i class="fas fa-plus"></i> สร้างใบงานใหม่</button>
+                    <button v-for="f in ['all','pending','shipped','cancelled']" :key="f" class="filter-chip" :class="{ active: jobFilter === f }" @click="jobFilter = f">
+                        {{ f === 'all' ? 'ทั้งหมด' : f === 'pending' ? '⏳ รอจ่าย' : f === 'shipped' ? '✅ จ่ายแล้ว' : '🚫 ยกเลิก' }}
+                        ({{ jobCounts[f] || 0 }})
+                    </button>
+                    <input type="text" v-model="jobSearch" placeholder="ค้นหาเลขที่ใบงาน JOB-... หรือชื่อลูกค้า..." class="flex-1 px-3 py-1.5 border rounded-lg text-sm bg-surface" />
+                </div>
+
+                <div v-for="j in filteredJobs" :key="j.id" class="job-card" :style="{ borderLeftColor: j.status === 'pending' ? '#f59e0b' : j.status === 'shipped' ? '#10b981' : '#ef4444' }">
+                    <div class="job-header">
+                        <div class="flex items-center gap-2">
+                            <span class="job-doc-badge">{{ j.docNo || ('JOB-' + j.id.slice(0, 6).toUpperCase()) }}</span>
+                            <span class="font-bold text-base">{{ j.customerName || j.customer || 'ไม่ระบุลูกค้า' }}</span>
+                        </div>
+                        <span class="job-status" :class="j.status">{{ j.status === 'pending' ? '⏳ รอตัดจ่าย' : j.status === 'shipped' ? '✅ ตัดจ่ายแล้ว' : '🚫 ยกเลิก' }}</span>
+                    </div>
+                    <div class="text-xs text-muted mb-2">
+                        📅 สร้างเมื่อ {{ formatDateTime(j.createdAt) }}
+                        <span v-if="j.shippedAt"> · 🚚 จ่ายออกเมื่อ {{ formatDateTime(j.shippedAt) }}</span>
+                    </div>
+                    <div class="bg-body p-2 rounded border mb-2 text-sm">
+                        <div v-for="it in j.items" :key="it.itemId" class="flex justify-between py-1 border-b" style="border-color:var(--border-color);">
+                            <span class="font-medium">{{ getItemCode(it.itemId) || '??' }} <span class="text-xs text-muted">{{ itemDisplayName(getItemObj(it.itemId)) }}</span></span>
+                            <span class="font-mono font-semibold">{{ formatNum(it.qty) }} {{ getItemObj(it.itemId)?.unitLabel || 'หน่วย' }}</span>
+                        </div>
+                    </div>
+                    <div v-if="j.note" class="text-xs text-secondary">📌 หมายเหตุ: {{ j.note }}</div>
+                    <div class="job-actions">
+                        <template v-if="j.status === 'pending'">
+                            <button class="btn-success btn-sm" @click="shipJob(j.id)"><i class="fas fa-shipping-fast"></i> ยืนยันตัดจ่ายสต็อก (FEFO)</button>
+                            <button class="btn-secondary btn-sm" @click="openModal('job', j.id)"><i class="fas fa-edit"></i> แก้ไข</button>
+                            <button class="btn-danger btn-sm" @click="cancelJob(j.id)"><i class="fas fa-times"></i> ยกเลิก</button>
+                        </template>
+                        <template v-else>
+                            <button class="btn-secondary btn-sm" @click="inspectJob(j)"><i class="fas fa-search"></i> ตรวจสอบล็อตที่จ่าย</button>
+                            <button v-if="j.status === 'shipped'" class="btn-danger btn-sm" @click="reverseShipmentPrompt(j.id)"><i class="fas fa-undo"></i> ดึงคืนสต็อก (Reverse)</button>
+                        </template>
+                    </div>
+                </div>
+                <div v-if="filteredJobs.length === 0" class="text-center py-6 text-muted">ไม่พบรายการใบงาน</div>
+            </div>
+
+            <!-- ===== PAGE 3: ANALYTICS ===== -->
+            <div class="page-container" :class="{ active: currentTab === 3 }">
+                <div class="flex flex-wrap gap-2 mb-3 items-center">
+                    <button v-for="p in ['month','quarter','year','all']" :key="p" class="filter-chip" :class="{ active: analyticsPeriodLabel === p }" @click="analyticsPeriodLabel = p; loadAnalytics()">
+                        {{ p === 'month' ? '30 วันล่าสุด' : p === 'quarter' ? '90 วัน (ไตรมาส)' : p === 'year' ? '1 ปี' : 'ทั้งหมด' }}
+                    </button>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-card clickable" @click="goToHistoryWithType('out')">
+                        <div class="label">📤 ยอดจ่ายออกรวม</div>
+                        <div class="value red">{{ formatNum(analytics.totalOut) }}</div>
+                    </div>
+                    <div class="stat-card clickable" @click="goToHistoryWithType('in')">
+                        <div class="label">📥 ยอดรับเข้ารวม</div>
+                        <div class="value teal">{{ formatNum(analytics.totalIn) }}</div>
+                    </div>
+                    <div class="stat-card clickable" @click="goToTab(2)">
+                        <div class="label">📦 ใบงานที่ส่งสำเร็จ</div>
+                        <div class="value">{{ analytics.shippedCount }}</div>
+                    </div>
+                    <div class="stat-card clickable" @click="goToTab(5)">
+                        <div class="label">🏢 ลูกค้าที่สั่งซื้อ</div>
+                        <div class="value">{{ analytics.customerCount }}</div>
+                    </div>
+                </div>
+                <div class="dash-grid-2">
+                    <div class="dash-card">
+                        <div class="card-title">🏅 ลูกค้าที่สั่งบ่อยที่สุด</div>
+                        <div v-for="(c, i) in analytics.topFreq.slice(0, 8)" :key="i" class="list-item" style="cursor:pointer;" @click="traceCustomerHistory(c.name)">
+                            <span>{{ i + 1 }}. {{ c.name }}</span>
+                            <span class="font-semibold text-primary">{{ c.count }} ใบงาน →</span>
+                        </div>
+                        <div v-if="analytics.topFreq.length === 0" class="text-center py-4 text-muted">ไม่มีข้อมูล</div>
+                    </div>
+                    <div class="dash-card">
+                        <div class="card-title">📦 ลูกค้าที่รับสินค้าปริมาณสูงสุด</div>
+                        <div v-for="(c, i) in analytics.topQty.slice(0, 8)" :key="i" class="list-item" style="cursor:pointer;" @click="traceCustomerHistory(c.name)">
+                            <span>{{ i + 1 }}. {{ c.name }}</span>
+                            <span class="font-mono font-semibold text-primary">{{ formatNum(c.qty) }} หน่วย →</span>
+                        </div>
+                        <div v-if="analytics.topQty.length === 0" class="text-center py-4 text-muted">ไม่มีข้อมูล</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== PAGE 4: STOCK CARD & TRACEABILITY HISTORY (บัตรคุมสต็อก & ตรวจสอบย้อนหลัง) ===== -->
+            <div class="page-container" :class="{ active: currentTab === 4 }">
+                <div class="flex flex-wrap justify-between items-center gap-2 mb-3">
+                    <div class="flex flex-wrap gap-2 items-center">
+                        <button v-for="h in ['all','today','week','month']" :key="h" class="filter-chip" :class="{ active: historyPeriod === h }" @click="historyPeriod = h">
+                            {{ h === 'all' ? 'ทั้งหมด' : h === 'today' ? 'วันนี้' : h === 'week' ? 'สัปดาห์นี้' : 'เดือนนี้' }}
+                        </button>
+                        <span v-if="historyFilter.batchId" class="ref-chip" @click="historyFilter.batchId = ''">
+                            🔍 กรองเฉพาะล็อต: {{ getBatchLabel(historyFilter.batchId) }} ✕
+                        </span>
+                    </div>
+                    <div class="flex gap-2">
+                        <button class="btn-secondary btn-sm" @click="resetHistoryFilters"><i class="fas fa-eraser"></i> ล้างตัวกรอง</button>
+                        <button class="btn-primary btn-sm" @click="exportHistory"><i class="fas fa-file-excel"></i> Export ตารางประวัติ (.xlsx)</button>
+                    </div>
+                </div>
+
+                <!-- Summary Bar for Filtered History -->
+                <div class="stats-grid" style="margin-bottom: 12px;">
+                    <div class="stat-card">
+                        <div class="label">รายการที่พบ</div>
+                        <div class="value">{{ historySummary.count }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">📥 รวมรับเข้า (+)</div>
+                        <div class="value green">+{{ formatNum(historySummary.totalIn) }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">📤 รวมจ่ายออก (-)</div>
+                        <div class="value red">-{{ formatNum(historySummary.totalOut) }}</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="label">🔁 ปรับยอดสุทธิ</div>
+                        <div class="value amber">{{ historySummary.totalAdjust >= 0 ? '+' : '' }}{{ formatNum(historySummary.totalAdjust) }}</div>
+                    </div>
+                </div>
+
+                <div class="history-filters">
+                    <div class="filter-group">
+                        <label>🔍 ค้นหา SKU / ล็อต</label>
+                        <input type="text" v-model="historyFilter.search" placeholder="เช่น POLYOL, BS80WS..." />
+                    </div>
+                    <div class="filter-group">
+                        <label>👤 ลูกค้า / เลขใบงาน</label>
+                        <input type="text" v-model="historyFilter.customerOrRef" placeholder="เช่น JOB-2025, ชื่อลูกค้า..." />
+                    </div>
+                    <div class="filter-group">
+                        <label>📂 ประเภทรายการ</label>
+                        <select v-model="historyFilter.type">
+                            <option value="">ทั้งหมด (รับเข้า/จ่ายออก/ปรับ)</option>
+                            <option value="out">📤 จ่ายออก (OUT)</option>
+                            <option value="in">📥 รับเข้า (IN)</option>
+                            <option value="adjust">🔁 ปรับสต็อก (ADJUST)</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>📅 ตั้งแต่วันที่</label>
+                        <input type="date" v-model="historyFilter.from" />
+                    </div>
+                    <div class="filter-group">
+                        <label>📅 ถึงวันที่</label>
+                        <input type="date" v-model="historyFilter.to" />
+                    </div>
+                </div>
+
+                <!-- Statement-style Stock Card Table -->
+                <div class="history-table-wrap">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>วัน-เวลา</th>
+                                <th>รหัสสินค้า (SKU)</th>
+                                <th>ประเภท</th>
+                                <th>ล็อตผลิต (Lot / MFG)</th>
+                                <th>อ้างอิงใบงาน / ลูกค้า</th>
+                                <th class="text-right">ก่อนทำรายการ</th>
+                                <th class="text-right">จำนวนเปลี่ยน</th>
+                                <th class="text-right">คงเหลือสะสม</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="h in filteredHistoryView" :key="h.id">
+                                <td class="font-mono text-xs text-secondary">{{ formatDateTime(h.ts) }}</td>
+                                <td>
+                                    <span class="font-semibold text-primary" style="cursor:pointer;" @click="openDetail(h.itemId)">{{ h.itemCode }}</span>
+                                    <div class="text-xs text-muted">{{ h.itemName }}</div>
+                                </td>
+                                <td>
+                                    <span class="tx-badge" :class="h.type">
+                                        {{ h.type === 'in' ? '📥 รับเข้า' : h.type === 'out' ? '📤 จ่ายออก' : '🔁 ปรับยอด' }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span v-if="h.batchId" class="lot-chip" @click="historyFilter.batchId = h.batchId" title="คลิกเพื่อกรองเฉพาะล็อตนี้">
+                                        <i class="fas fa-tag"></i> {{ h.batchLabel }}
+                                    </span>
+                                    <span v-else class="text-xs text-muted">{{ h.batchLabel }}</span>
+                                </td>
+                                <td>
+                                    <div class="flex items-center gap-2 flex-wrap">
+                                        <button v-if="h.ref" class="ref-chip" @click="inspectReference(h.ref)" title="คลิกเพื่อดูรายละเอียดใบงาน">
+                                            <i class="fas fa-file-alt"></i> {{ h.refDisplay }}
+                                        </button>
+                                        <span v-if="h.customerOrNote" class="text-xs font-medium">{{ h.customerOrNote }}</span>
+                                    </div>
+                                </td>
+                                <td class="text-right font-mono text-secondary">{{ formatNum(h.balanceBefore) }}</td>
+                                <td class="text-right font-mono font-bold" :style="{ color: h.qty >= 0 ? 'var(--success)' : 'var(--danger)' }">
+                                    {{ h.qty > 0 ? '+' : '' }}{{ formatNum(h.qty) }}
+                                </td>
+                                <td class="text-right font-mono font-bold text-primary">{{ formatNum(h.balanceAfter) }}</td>
+                            </tr>
+                            <tr v-if="filteredHistoryView.length === 0">
+                                <td colspan="8" class="text-center py-6 text-muted">ไม่พบประวัติรายการตามเงื่อนไขที่เลือก</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ===== PAGE 5: CUSTOMERS ===== -->
+            <div class="page-container" :class="{ active: currentTab === 5 }">
+                <div class="flex flex-wrap gap-2 mb-3 items-center">
+                    <input type="text" v-model="customerSearch" placeholder="ค้นหาชื่อลูกค้า / เบอร์โทร..." class="flex-1 px-3 py-2 border rounded-lg text-sm bg-surface" />
+                    <button class="btn-primary" @click="openModal('customer')"><i class="fas fa-user-plus"></i> เพิ่มลูกค้าใหม่</button>
+                </div>
+                <div class="customer-grid">
+                    <div v-for="c in filteredCustomersList" :key="c.id" class="customer-card" @click="traceCustomerHistory(c.name)">
+                        <div class="customer-card-avatar" style="background:var(--primary);">{{ (c.name || '?').slice(0, 2).toUpperCase() }}</div>
+                        <div class="flex-1 min-w-0">
+                            <div class="font-bold truncate">{{ c.name }}</div>
+                            <div class="text-xs text-secondary mt-1"><i class="fas fa-phone"></i> {{ c.phone || 'ไม่ระบุเบอร์' }}</div>
+                            <div class="text-xs text-muted truncate mt-1"><i class="fas fa-map-marker-alt"></i> {{ c.address || 'ไม่ระบุที่อยู่' }}</div>
+                            <div class="flex justify-between items-center mt-2 pt-2 border-t" style="border-color:var(--border-color);">
+                                <span class="text-xs font-semibold text-primary">🔍 ดูประวัติรับสินค้า →</span>
+                                <div class="flex gap-1" @click.stop>
+                                    <button class="btn-secondary btn-sm" @click="openModal('customer', c.id)"><i class="fas fa-edit"></i></button>
+                                    <button class="btn-danger btn-sm" @click="deleteCustomer(c.id)"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ===== PAGE 6: SETTINGS ===== -->
+            <div class="page-container" :class="{ active: currentTab === 6 }">
+                <div class="settings-section">
+                    <div class="settings-section-title">☁️ ระบบซิงค์ฐานข้อมูลออนไลน์ฟรี (Supabase Auto-Sync)</div>
+                    <div class="settings-row">
+                        <div>
+                            <div class="font-semibold">สถานะการเชื่อมต่อ Cloud</div>
+                            <div class="text-xs text-muted">{{ cloudState.enabled ? `เชื่อมต่อกับ ${cloudState.url}` : 'ยังไม่ได้ตั้งค่า (เก็บข้อมูลในเบราว์เซอร์เครื่องนี้)' }}</div>
+                        </div>
+                        <button class="btn-primary btn-sm" @click="openModal('cloudSync')"><i class="fas fa-cog"></i> ตั้งค่า Supabase</button>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <div class="settings-section-title">🎨 รูปแบบการแสดงผล (Appearance)</div>
+                    <div class="settings-row">
+                        <span>โหมดมืด (Dark Mode)</span>
+                        <button class="btn-secondary btn-sm" @click="toggleTheme">{{ themeMode === 'dark' ? '☀️ สลับเป็นโหมดสว่าง' : '🌙 สลับเป็นโหมดมืด' }}</button>
+                    </div>
+                    <div class="settings-row">
+                        <span>สีหลักของระบบ (Accent Color)</span>
+                        <div>
+                            <button v-for="opt in accentOptions" :key="opt.key" class="accent-swatch" :class="{ selected: accentTheme === opt.key }" :style="{ background: opt.color }" @click="setAccent(opt.key)">
+                                <i v-if="accentTheme === opt.key" class="fas fa-check"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-section">
+                    <div class="settings-section-title">💾 สำรองและนำเข้าข้อมูล (Backup & Excel)</div>
+                    <div class="settings-row">
+                        <span>สำรองข้อมูลทั้งหมดเป็นไฟล์ .JSON / กู้คืนข้อมูล</span>
+                        <button class="btn-secondary btn-sm" @click="openModal('backup')"><i class="fas fa-database"></i> จัดการ Backup</button>
+                    </div>
+                    <div class="settings-row">
+                        <span>นำเข้าผลนับสต็อกจากไฟล์ Excel (.xlsx)</span>
+                        <button class="btn-secondary btn-sm" @click="openModal('importStock')"><i class="fas fa-file-import"></i> นำเข้า Excel</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- MOBILE BOTTOM NAV -->
+        <nav class="bottom-nav">
+            <button v-for="(tab, idx) in tabs.slice(0, 5)" :key="idx" class="bottom-nav-item" :class="{ active: currentTab === idx }" @click="goToTab(idx)">
+                <i :class="tab.icon"></i> {{ tab.label }}
+            </button>
+        </nav>
+
+        <!-- FAB -->
+        <button class="fab" @click="fabOpen = !fabOpen"><span v-if="!fabOpen">+</span><span v-else>✕</span></button>
+        <div class="fab-menu" :class="{ open: fabOpen }">
+            <button class="btn" @click="openModal('job'); fabOpen = false"><i class="fas fa-clipboard-list"></i> สร้างใบงานเบิก/จ่าย</button>
+            <button class="btn" @click="openModal('transaction'); fabOpen = false"><i class="fas fa-exchange-alt"></i> รับเข้า / ปรับสต็อก</button>
+            <button class="btn" @click="openModal('product'); fabOpen = false"><i class="fas fa-box"></i> เพิ่มสินค้า (SKU)</button>
+            <button class="btn" @click="openScanner(); fabOpen = false"><i class="fas fa-qrcode"></i> สแกน QR / Barcode</button>
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- MODALS                                                        -->
+        <!-- ============================================================== -->
+
+        <!-- 1. SUPABASE CLOUD SYNC MODAL -->
+        <div v-if="modals.cloudSync" class="modal-overlay" @click.self="closeModal('cloudSync')">
+            <div class="modal-box">
+                <div class="modal-header">
+                    <span class="title">☁️ ตั้งค่าซิงค์ข้อมูลอัตโนมัติฟรี (Supabase Cloud Sync)</span>
+                    <button class="close-btn" @click="closeModal('cloudSync')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert-box info mb-3">
+                        <div>
+                            <strong>ทำไมต้องใช้ Hybrid Local + Supabase?</strong><br>
+                            ข้อมูลจะถูกบันทึกในเครื่องทันที (รวดเร็ว ใช้งานแม้เน็ตหลุด) และซิงค์ขึ้น Cloud อัตโนมัติเพื่อให้เปิดดูจากมือถือหรือคอมเครื่องอื่นได้แบบ Realtime ฟรี 100%
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>1. ขั้นตอนเตรียมตารางใน Supabase (ทำครั้งเดียว)</label>
+                        <div class="text-xs text-secondary mb-2">
+                            สมัครฟรีที่ <strong>supabase.com</strong> → สร้างโปรเจกต์ใหม่ → ไปที่เมนู <strong>SQL Editor</strong> แล้วกดปุ่มด้านล่างเพื่อคัดลอกคำสั่ง SQL ไปวางแล้วกด Run
+                        </div>
+                        <button class="btn-secondary btn-sm" @click="copySupabaseSql"><i class="fas fa-copy"></i> คัดลอกคำสั่ง SQL สำหรับสร้างตารางอัตโนมัติ</button>
+                    </div>
+
+                    <div class="form-group">
+                        <label>2. Supabase Project URL</label>
+                        <input v-model="cloudForm.url" placeholder="วาง Project URL จากหน้า Project Settings > API" />
+                    </div>
+                    <div class="form-group">
+                        <label>3. Supabase Anon Key (Public)</label>
+                        <input v-model="cloudForm.anonKey" type="password" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." />
+                    </div>
+
+                    <div class="flex flex-wrap justify-between items-center gap-2 mt-4 pt-3 border-t" style="border-color:var(--border-color);">
+                        <div class="flex gap-2">
+                            <button v-if="cloudState.enabled" class="btn-secondary btn-sm" @click="pushAllToCloud"><i class="fas fa-cloud-upload-alt"></i> ส่งข้อมูลขึ้น Cloud ทันที</button>
+                            <button v-if="cloudState.enabled" class="btn-secondary btn-sm" @click="pullAllFromCloud"><i class="fas fa-cloud-download-alt"></i> ดึงข้อมูลจาก Cloud</button>
+                            <button v-if="cloudState.enabled" class="btn-danger btn-sm" @click="disconnectCloud">ตัดการเชื่อมต่อ</button>
+                        </div>
+                        <div class="flex gap-2">
+                            <button class="btn-secondary" @click="closeModal('cloudSync')">ปิด</button>
+                            <button class="btn-primary" @click="saveCloudConfig"><i class="fas fa-save"></i> บันทึกและเชื่อมต่อ</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 2. PRODUCT MODAL (เพิ่มฟิลด์ minStock รายสินค้า) -->
+        <div v-if="modals.product" class="modal-overlay" @click.self="closeModal('product')">
+            <div class="modal-box">
+                <div class="modal-header">
+                    <span class="title">{{ modalProduct.id ? '✏️ แก้ไขข้อมูลสินค้า (SKU)' : '➕ เพิ่มสินค้าใหม่ (SKU)' }}</span>
+                    <button class="close-btn" @click="closeModal('product')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-row">
+                        <div class="form-group"><label>รหัสสินค้า (SKU) *</label><input v-model="modalProduct.code" placeholder="เช่น POLYOL AR-301" /></div>
+                        <div class="form-group"><label>ประเภทสินค้า</label><select v-model="modalProduct.type"><option value="เคมีภัณฑ์">เคมีภัณฑ์</option><option value="ฟอยล์">ฟอยล์</option></select></div>
+                    </div>
+                    <div v-if="modalProduct.type === 'เคมีภัณฑ์'" class="form-group">
+                        <label>ชื่อสารเคมี (Chemical Name) *</label>
+                        <input v-model="modalProduct.chemType" placeholder="เช่น Formulated Polyol" />
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>คลังที่เก็บ (Location)</label><select v-model="modalProduct.location"><option value="">-- เลือกคลัง --</option><option value="WH1">WH1</option><option value="WH2">WH2</option><option value="WH3">WH3</option></select></div>
+                        <div class="form-group"><label>จุดเตือนสต็อกต่ำ (Min Stock) *</label><input v-model="modalProduct.minStock" type="number" min="0" step="1" placeholder="10" /></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>หน่วยนับ</label><input v-model="modalProduct.unitLabel" placeholder="ถัง, ม้วน, กก." /></div>
+                        <div class="form-group"><label>อายุเก็บรักษา (เดือน)</label><input v-model="modalProduct.shelfLifeMonths" type="number" min="0" placeholder="6 หรือ 12" /></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>สีถัง / สีฟอยล์</label><input v-model="modalProduct.tankColor" placeholder="เขียว, แดง, ขาว/เงิน" /></div>
+                        <div class="form-group"><label>น้ำหนักสุทธิ (KG)</label><input v-model="modalProduct.netWeight" type="number" step="0.1" placeholder="0" /></div>
+                    </div>
+                    <div v-if="modalProduct.type === 'ฟอยล์'" class="form-row">
+                        <div class="form-group"><label>ลายฟอยล์</label><input v-model="modalProduct.foilName" placeholder="เช่น เปลือกส้ม" /></div>
+                        <div class="form-group"><label>ความกว้าง (mm) × ความยาว (m)</label>
+                            <div class="flex gap-2">
+                                <input v-model="modalProduct.width" type="number" placeholder="กว้าง (mm)" />
+                                <input v-model="modalProduct.length" type="number" placeholder="ยาว (m)" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group"><label>หมายเหตุ</label><textarea v-model="modalProduct.note" rows="2"></textarea></div>
+                    <div class="flex justify-end gap-2 mt-3">
+                        <button class="btn-secondary" @click="closeModal('product')">ยกเลิก</button>
+                        <button class="btn-primary" @click="saveProduct">บันทึกสินค้า</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 3. TRANSACTION MODAL -->
+        <div v-if="modals.transaction" class="modal-overlay" @click.self="closeModal('transaction')">
+            <div class="modal-box">
+                <div class="modal-header">
+                    <span class="title">📝 บันทึกรับเข้า / ปรับยอดสต็อก</span>
+                    <button class="close-btn" @click="closeModal('transaction')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>เลือกสินค้า (SKU) *</label>
+                        <select v-model="modalTx.itemId">
+                            <option value="">-- เลือกสินค้า --</option>
+                            <option v-for="it in activeItems" :key="it.id" :value="it.id">{{ it.code }} (คงเหลือ {{ formatNum(getBalance(it.id)) }})</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>ประเภทรายการ</label>
+                        <div class="flex gap-2">
+                            <button class="flex-1 py-2 rounded font-semibold text-sm border" :style="modalTx.type === 'in' ? 'background:var(--primary);color:#fff;' : ''" @click="modalTx.type = 'in'">📥 รับเข้าล็อตใหม่ (+)</button>
+                            <button class="flex-1 py-2 rounded font-semibold text-sm border" :style="modalTx.type === 'adjust_plus' ? 'background:var(--primary);color:#fff;' : ''" @click="modalTx.type = 'adjust_plus'">🔺 ปรับเพิ่ม (+)</button>
+                            <button class="flex-1 py-2 rounded font-semibold text-sm border" :style="modalTx.type === 'adjust_minus' ? 'background:var(--danger);color:#fff;' : ''" @click="modalTx.type = 'adjust_minus'">🔻 ปรับลด (-)</button>
+                        </div>
+                    </div>
+                    <div v-if="modalTx.type !== 'in'" class="form-group">
+                        <label>เลือกล็อตที่ต้องการปรับยอด</label>
+                        <select v-model="modalTx.batchId">
+                            <option value="">-- เลือกล็อตอัตโนมัติ (FEFO) --</option>
+                            <option v-for="b in getBatches(modalTx.itemId)" :key="b.id" :value="b.id">MFG {{ b.mfgDate }} {{ b.lotNo ? `(${b.lotNo})` : '' }} — เหลือ {{ formatNum(b.qtyRemaining) }}</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>จำนวน *</label>
+                        <input v-model="modalTx.qty" type="number" step="0.1" placeholder="ระบุจำนวน" />
+                        <div v-if="modalTx.itemId && modalTx.qty" class="text-xs text-primary font-semibold mt-1">
+                            📊 ยอดก่อนทำรายการ: {{ formatNum(getBalance(modalTx.itemId)) }} → ยอดหลังทำรายการ: {{ formatNum(previewBalance(modalTx.itemId, modalTx.type, modalTx.qty)) }}
+                        </div>
+                    </div>
+                    <div v-if="modalTx.type === 'in'" class="form-row">
+                        <div class="form-group"><label>วันที่ผลิต (MFG Date) *</label><input v-model="modalTx.mfgDate" type="date" /></div>
+                        <div class="form-group"><label>หมายเลขล็อต (Lot No.)</label><input v-model="modalTx.lotNo" placeholder="เช่น LOT-2025-01" /></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>เลขเอกสารอ้างอิง (PO / Ref)</label><input v-model="modalTx.ref" placeholder="เช่น PO-2025-089" /></div>
+                        <div class="form-group"><label>หมายเหตุ</label><input v-model="modalTx.note" placeholder="ระบุสาเหตุหรือผู้ทำรายการ" /></div>
+                    </div>
+                    <div class="flex justify-end gap-2 mt-3">
+                        <button class="btn-secondary" @click="closeModal('transaction')">ยกเลิก</button>
+                        <button class="btn-primary" @click="saveTransaction">บันทึกรายการ</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4. JOB MODAL -->
+        <div v-if="modals.job" class="modal-overlay" @click.self="closeModal('job')">
+            <div class="modal-box">
+                <div class="modal-header">
+                    <span class="title">{{ modalJob.id ? '✏️ แก้ไขใบงาน' : '📋 สร้างใบงานเบิก/จ่ายสินค้าใหม่' }}</span>
+                    <button class="close-btn" @click="closeModal('job')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label>ลูกค้า * (พิมพ์ชื่อลูกค้าใหม่หรือเลือกจากรายชื่อ)</label>
+                        <input list="customer-datalist" v-model="customerSearchText" placeholder="พิมพ์ชื่อลูกค้า..." />
+                        <datalist id="customer-datalist">
+                            <option v-for="c in filteredCustomers" :key="c.id" :value="c.name"></option>
+                        </datalist>
+                    </div>
+                    <div class="form-group">
+                        <label>รายการสินค้าที่เบิกจ่าย</label>
+                        <div v-for="(it, idx) in modalJob.items" :key="it._rid" class="flex items-center gap-2 mb-2">
+                            <select v-model="it.itemId" style="flex:1;">
+                                <option value="">-- เลือกสินค้า --</option>
+                                <option v-for="item in activeItems" :key="item.id" :value="item.id">
+                                    {{ item.code }} — เหลือ {{ formatNum(getBalance(item.id)) }} {{ item.unitLabel }}
+                                </option>
+                            </select>
+                            <input v-model="it.qty" type="number" step="0.1" placeholder="จำนวน" style="width:95px;text-align:center;" />
+                            <button class="btn-danger btn-sm" @click="modalJob.items.splice(idx, 1)">✕</button>
+                        </div>
+                        <button class="btn-secondary btn-sm" @click="addJobItemRow"><i class="fas fa-plus"></i> เพิ่มรายการสินค้า</button>
+                    </div>
+                    <div class="form-group"><label>หมายเหตุใบงาน</label><textarea v-model="modalJob.note" rows="2" placeholder="เช่น ส่งด่วนรอบเช้า, ทะเบียนรถขนส่ง..."></textarea></div>
+                    <div class="flex justify-end gap-2 mt-3">
+                        <button class="btn-secondary" @click="closeModal('job')">ยกเลิก</button>
+                        <button class="btn-primary" @click="saveJob">บันทึกใบงาน</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5. ITEM DETAIL & BATCH TRACEABILITY MODAL -->
+        <div v-if="modals.detail && detailItem" class="modal-overlay" @click.self="closeModal('detail')">
+            <div class="modal-box">
+                <div class="modal-header">
+                    <span class="title">📦 ข้อมูลสินค้าและล็อต: {{ detailItem.code }}</span>
+                    <button class="close-btn" @click="closeModal('detail')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="grid grid-cols-2 gap-2 text-sm bg-body p-3 rounded border mb-3">
+                        <div><span class="text-muted">ชื่อ/รายละเอียด:</span> <strong>{{ itemDisplayName(detailItem) }}</strong></div>
+                        <div><span class="text-muted">คลัง/ขนาด:</span> <strong>{{ itemLocationOrSize(detailItem) }}</strong></div>
+                        <div><span class="text-muted">ยอดคงเหลือสุทธิ:</span> <strong class="text-primary font-mono text-base">{{ formatNum(detailBalance) }} {{ detailItem.unitLabel }}</strong></div>
+                        <div><span class="text-muted">จุดเตือน Min Stock:</span> <strong>{{ formatNum(detailItem.minStock ?? 10) }}</strong></div>
+                    </div>
+
+                    <div class="flex justify-between items-center mb-2">
+                        <div class="font-semibold text-sm">🏷️ ล็อตสินค้าคงเหลือ ({{ detailBatches.length }} ล็อต)</div>
+                        <button v-if="detailBatches.length > 0" class="btn-secondary btn-sm" style="background:var(--warning-100);color:var(--warning-700);border-color:#fde68a;" @click="openTransferModal(detailItem.id)">
+                            <i class="fas fa-random"></i> ย้าย / แยกล็อตที่ปนกัน
+                        </button>
+                    </div>
+                    <div class="space-y-1 mb-4">
+                        <div v-for="b in detailBatches" :key="b.id" class="list-item bg-body px-3 py-2 rounded border">
+                            <div>
+                                <span class="font-mono font-semibold">MFG: {{ b.mfgDate }}</span>
+                                <span v-if="b.lotNo" class="ml-1 text-xs bg-surface px-2 py-0.5 rounded border">Lot: {{ b.lotNo }}</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <span class="font-mono font-bold text-primary mr-1">เหลือ {{ formatNum(b.qtyRemaining) }}</span>
+                                <button class="btn-secondary btn-sm" @click="openTransferModal(detailItem.id, b.id)" title="แยกล็อตหรือย้ายออกจากล็อตนี้"><i class="fas fa-random"></i> ย้าย/แยก</button>
+                                <button class="btn-secondary btn-sm" @click="traceBatchHistory(b.id)">🔍 ประวัติล็อต</button>
+                            </div>
+                        </div>
+                        <div v-if="detailBatches.length === 0" class="text-muted text-sm py-2">ไม่มีล็อตคงเหลือในคลัง</div>
+                    </div>
+
+                    <div class="flex flex-wrap justify-between gap-2 pt-3 border-t" style="border-color:var(--border-color);">
+                        <div class="flex flex-wrap gap-2">
+                            <button class="btn-primary btn-sm" @click="closeModal('detail'); openModal('transaction', detailItem.id)"><i class="fas fa-plus"></i> รับเข้า/ปรับยอด</button>
+                            <button class="btn-secondary btn-sm" @click="traceProductHistory(detailItem.code)"><i class="fas fa-book-open"></i> บัตรคุมสต็อก</button>
+                            <button class="btn-secondary btn-sm" @click="syncItem(detailItem.id)" title="กระทบยอดรวมล็อตให้ตรงกับธุรกรรม"><i class="fas fa-sync"></i> กระทบยอดล็อต</button>
+                            <button class="btn-danger btn-sm" @click="reverseLastTransaction(detailItem.id)" title="ยกเลิกรายการรับเข้า/ปรับยอดล่าสุดของสินค้านี้"><i class="fas fa-undo"></i> ยกเลิกรายการล่าสุด</button>
+                        </div>
+                        <button class="btn-secondary btn-sm" @click="closeModal('detail')">ปิดหน้าต่าง</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 5B. PRO BATCH TRANSFER / SPLIT / MERGE MODAL (แก้ปัญหาล็อตปนกัน) -->
+        <div v-if="modals.transfer" class="modal-overlay" @click.self="closeModal('transfer')">
+            <div class="modal-box" style="max-width: 580px;">
+                <div class="modal-header">
+                    <span class="title">🔀 ย้าย / แยก / รวมล็อตสินค้า: {{ getItemCode(transferItemId) }}</span>
+                    <button class="close-btn" @click="closeModal('transfer')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert-box warning mb-3">
+                        <span>💡 <strong>สำหรับแก้ปัญหาของเข้าปนล็อต:</strong> เลือกล็อตต้นทาง แล้วเลือกย้ายไปรวมกับล็อตที่มีอยู่ หรือเลือก <strong>"➕ แยกเป็นล็อตใหม่"</strong> เพื่อกำหนดวันผลิต (MFG) และ Lot No. ใหม่ได้ทันที</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label>1. ล็อตต้นทาง (ที่ต้องการดึงจำนวนออก) *</label>
+                        <select v-model="transferFrom">
+                            <option v-for="b in transferBatches" :key="b.id" :value="b.id">
+                                MFG {{ b.mfgDate }}{{ b.lotNo ? ` (Lot: ${b.lotNo})` : '' }} — คงเหลือ {{ formatNum(b.qtyRemaining) }} {{ getItemObj(transferItemId)?.unitLabel || 'หน่วย' }}
+                            </option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>2. ล็อตปลายทาง (ที่ต้องการย้ายไป หรือแยกเป็นล็อตใหม่) *</label>
+                        <select v-model="transferTo">
+                            <option value="__NEW__">➕ แยกเป็นล็อตใหม่ (ระบุวันผลิต MFG / Lot No. ใหม่)</option>
+                            <option v-for="b in transferBatches.filter(x => x.id !== transferFrom)" :key="b.id" :value="b.id">
+                                📦 รวมเข้าล็อตเดิม: MFG {{ b.mfgDate }}{{ b.lotNo ? ` (Lot: ${b.lotNo})` : '' }} (มีอยู่ {{ formatNum(b.qtyRemaining) }})
+                            </option>
+                        </select>
+                    </div>
+
+                    <div v-if="transferTo === '__NEW__'" class="form-row bg-body p-3 rounded border mb-3">
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>วันผลิต (MFG Date) ของล็อตใหม่ *</label>
+                            <input v-model="transferNewMfg" type="date" />
+                        </div>
+                        <div class="form-group" style="margin-bottom:0;">
+                            <label>หมายเลขล็อตใหม่ (Lot No.)</label>
+                            <input v-model="transferNewLotNo" placeholder="เช่น LOT-B หรือเว้นว่าง" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>3. จำนวนที่ต้องการย้าย / แยกล็อต *</label>
+                        <input v-model="transferQty" type="number" step="0.1" min="0.1" placeholder="ระบุจำนวนที่ต้องการย้าย..." />
+                        <div class="qty-quick-btns">
+                            <button type="button" class="qty-quick-btn" @click="setTransferQuickQty(1)">1 หน่วย</button>
+                            <button type="button" class="qty-quick-btn" @click="setTransferQuickQty(5)">5 หน่วย</button>
+                            <button type="button" class="qty-quick-btn" @click="setTransferQuickQty('half')">ครึ่งล็อต (50%)</button>
+                            <button type="button" class="qty-quick-btn" @click="setTransferQuickQty('all')">ย้ายทั้งหมด (100%)</button>
+                        </div>
+                    </div>
+
+                    <!-- Live Preview Before -> After -->
+                    <div v-if="transferPreview" class="transfer-visual-grid">
+                        <div class="transfer-lot-card">
+                            <div class="lot-title">📤 ล็อตต้นทาง (หลังย้าย)</div>
+                            <div class="text-xs text-secondary">{{ transferPreview.fromLabel }}</div>
+                            <div class="lot-num" :style="{ color: transferPreview.fromAfter < 0 ? 'var(--danger)' : 'var(--text-primary)' }">
+                                {{ formatNum(transferPreview.fromBefore) }} → <span class="text-primary">{{ formatNum(transferPreview.fromAfter) }}</span>
+                            </div>
+                        </div>
+                        <div class="text-center font-bold text-primary" style="font-size:18px;">
+                            <i class="fas fa-arrow-right"></i>
+                            <div class="text-xs font-mono">{{ formatNum(transferPreview.qty) }}</div>
+                        </div>
+                        <div class="transfer-lot-card">
+                            <div class="lot-title">📥 ล็อตปลายทาง (หลังรับ)</div>
+                            <div class="text-xs text-secondary">{{ transferPreview.toLabel }}</div>
+                            <div class="lot-num">
+                                {{ formatNum(transferPreview.toBefore) }} → <span style="color:var(--success);">{{ formatNum(transferPreview.toAfter) }}</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex justify-end gap-2 mt-3">
+                        <button class="btn-secondary" @click="closeModal('transfer')">ยกเลิก</button>
+                        <button class="btn-primary" @click="executeTransfer"><i class="fas fa-check"></i> ยืนยันย้าย/แยกล็อต</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 6. JOB INSPECTION MODAL (ตรวจสอบใบงานย้อนหลัง) -->
+        <div v-if="modals.jobInspect && inspectedJob" class="modal-overlay" @click.self="closeModal('jobInspect')">
+            <div class="modal-box">
+                <div class="modal-header">
+                    <span class="title">🔎 ตรวจสอบใบงานอ้างอิง: {{ inspectedJob.docNo || inspectedJob.id }}</span>
+                    <button class="close-btn" @click="closeModal('jobInspect')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="bg-body p-3 rounded border mb-3 text-sm space-y-1">
+                        <div><span class="text-muted">เลขที่เอกสาร:</span> <strong class="font-mono">{{ inspectedJob.docNo || ('PJ-' + inspectedJob.id) }}</strong></div>
+                        <div><span class="text-muted">ลูกค้า:</span> <strong>{{ inspectedJob.customerName || inspectedJob.customer }}</strong></div>
+                        <div><span class="text-muted">สถานะ:</span> <strong>{{ inspectedJob.status === 'shipped' ? '✅ ตัดจ่ายแล้ว' : inspectedJob.status }}</strong></div>
+                        <div v-if="inspectedJob.shippedAt"><span class="text-muted">วัน-เวลาที่ตัดจ่าย:</span> <strong>{{ formatDateTime(inspectedJob.shippedAt) }}</strong></div>
+                        <div v-if="inspectedJob.note"><span class="text-muted">หมายเหตุ:</span> {{ inspectedJob.note }}</div>
+                    </div>
+
+                    <div class="font-semibold text-sm mb-2">📦 รายการล็อตที่ถูกตัดจ่ายในบิลนี้</div>
+                    <div class="history-table-wrap">
+                        <table style="min-width: 100%;">
+                            <thead>
+                                <tr>
+                                    <th>รหัสสินค้า (SKU)</th>
+                                    <th>ล็อตที่ตัดจ่าย (MFG / Lot)</th>
+                                    <th class="text-right">จำนวนที่จ่าย</th>
+                                    <th class="text-right">คงเหลือหลังจ่าย</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-for="tx in inspectedJobTxs" :key="tx.id">
+                                    <td class="font-semibold">{{ tx.itemCode }}</td>
+                                    <td class="font-mono text-xs">{{ tx.batchLabel }}</td>
+                                    <td class="text-right font-mono font-bold" style="color:var(--danger);">{{ formatNum(tx.qty) }}</td>
+                                    <td class="text-right font-mono font-bold text-primary">{{ formatNum(tx.balanceAfter) }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="flex justify-end gap-2 mt-4">
+                        <button class="btn-secondary" @click="closeModal('jobInspect')">ปิด</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 7. CUSTOMER MODAL -->
+        <div v-if="modals.customer" class="modal-overlay" @click.self="closeModal('customer')">
+            <div class="modal-box">
+                <div class="modal-header">
+                    <span class="title">{{ modalCustomer.id ? '✏️ แก้ไขลูกค้า' : '➕ เพิ่มลูกค้าใหม่' }}</span>
+                    <button class="close-btn" @click="closeModal('customer')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="form-group"><label>ชื่อลูกค้า / บริษัท *</label><input v-model="modalCustomer.name" placeholder="ระบุชื่อลูกค้า" /></div>
+                    <div class="form-group"><label>เบอร์โทรศัพท์</label><input v-model="modalCustomer.phone" placeholder="08x-xxx-xxxx" /></div>
+                    <div class="form-group"><label>ที่อยู่จัดส่ง</label><textarea v-model="modalCustomer.address" rows="2"></textarea></div>
+                    <div class="flex justify-end gap-2 mt-3">
+                        <button class="btn-secondary" @click="closeModal('customer')">ยกเลิก</button>
+                        <button class="btn-primary" @click="saveCustomer">บันทึก</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 8. BACKUP MODAL -->
+        <div v-if="modals.backup" class="modal-overlay" @click.self="closeModal('backup')">
+            <div class="modal-box">
+                <div class="modal-header">
+                    <span class="title">💾 สำรองและกู้คืนข้อมูล (Backup & Restore)</span>
+                    <button class="close-btn" @click="closeModal('backup')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="flex flex-wrap gap-2 mb-4">
+                        <button class="btn-primary" @click="createBackup"><i class="fas fa-download"></i> สร้างและดาวน์โหลดไฟล์ Backup (.json)</button>
+                        <button class="btn-secondary" @click="triggerRestore"><i class="fas fa-upload"></i> นำเข้าไฟล์ Backup (.json)</button>
+                        <input type="file" id="restoreInput" accept=".json" style="display:none;" @change="restoreBackup($event)" />
+                    </div>
+                    <div v-for="b in backups" :key="b.id" class="list-item">
+                        <span class="font-mono text-xs">{{ b.filename }}</span>
+                        <span class="text-xs text-muted">{{ formatDateTime(b.ts) }}</span>
+                    </div>
+                    <div v-if="backups.length === 0" class="text-center py-4 text-muted">ยังไม่มีประวัติ Backup</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 9. IMPORT EXCEL STOCK MODAL -->
+        <div v-if="modals.importStock" class="modal-overlay" @click.self="closeModal('importStock')">
+            <div class="modal-box">
+                <div class="modal-header">
+                    <span class="title">📤 นำเข้าผลนับสต็อกจาก Excel</span>
+                    <button class="close-btn" @click="closeModal('importStock')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p class="text-xs text-secondary mb-2">รองรับไฟล์ .xlsx ที่มีคอลัมน์ <strong>SKU</strong> และ <strong>นับได้จริง</strong></p>
+                    <input type="file" accept=".xlsx,.xls" @change="onStockFileChange" class="mb-3" />
+                    <div v-if="stockFileData" class="text-xs text-primary mb-3">📎 พบข้อมูล {{ stockFileData.length }} แถว พร้อมปรับยอด</div>
+                    <div class="flex justify-end gap-2">
+                        <button class="btn-secondary" @click="closeModal('importStock')">ยกเลิก</button>
+                        <button class="btn-primary" :disabled="!stockFileData" @click="importStockCount">ยืนยันปรับยอดตามไฟล์</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 10. QR SCANNER MODAL -->
+        <div v-if="modals.scanner" class="modal-overlay" @click.self="stopScanner">
+            <div class="modal-box" style="max-width:420px;">
+                <div class="modal-header">
+                    <span class="title">📷 สแกน QR / Barcode</span>
+                    <button class="close-btn" @click="stopScanner">&times;</button>
+                </div>
+                <div class="modal-body text-center">
+                    <div id="scanner-container" style="width:100%;min-height:240px;background:#000;border-radius:8px;overflow:hidden;"></div>
+                    <button class="btn-danger mt-3" @click="stopScanner">ปิดกล้อง</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const DEFAULT_SHELF_LIFE = 6;
+        const APP_VERSION = '7.0.0';
+
+        // ================================================================
+        //  DEXIE LOCAL DATABASE (v6 adds docNo & minStock & balanceBefore/After)
+        // ================================================================
+        const db = new Dexie('StockJobProV5');
+        db.version(6).stores({
+            items: 'id, code, type, createdAt, deletedAt, foilName, foilColor, foilWeight, minStock',
+            batches: 'id, itemId, mfgDate, lotNo, qtyRemaining, createdAt',
+            transactions: 'id, itemId, batchId, type, qty, ts, status, ref, mfgDate',
+            jobs: 'id, docNo, customerId, status, createdAt, shippedAt, deletedAt',
+            customers: 'id, name, phone, createdAt, deletedAt',
+            audit: 'id, action, targetId, ts',
+            backups: 'id, filename, ts, size, data'
+        });
+
+        const Utils = {
+            uid: () => (crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 7)),
+            todayStr: (d) => (d || new Date()).toISOString().slice(0, 10),
+            fmtDateTime: (ts) => {
+                if (!ts) return '-';
+                const d = new Date(ts);
+                return isNaN(d) ? '-' : d.toLocaleString('th-TH', { day: '2-digit', month: 'short', year: '2-digit', hour: '2-digit', minute: '2-digit' });
+            },
+            fmtTime: (ts) => {
+                if (!ts) return '';
+                const d = new Date(ts);
+                return isNaN(d) ? '' : d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit' });
+            },
+            fmtNum: (n) => {
+                if (n === undefined || n === null || isNaN(n)) return '0';
+                const val = Math.round(Number(n) * 100) / 100;
+                return Number.isInteger(val) ? val.toLocaleString('th-TH') : val.toLocaleString('th-TH', { maximumFractionDigits: 2 });
+            },
+            getWeekStart: (d) => { const date = new Date(d); const day = date.getDay(); const diff = date.getDate() - day + (day === 0 ? -6 : 1); date.setDate(diff); date.setHours(0,0,0,0); return date; },
+            getMonthStart: (d) => new Date(d.getFullYear(), d.getMonth(), 1),
+            daysBetween: (d1, d2) => Math.ceil((new Date(d2).getTime() - new Date(d1).getTime()) / 86400000),
+            addMonths: (date, months) => { const d = new Date(date); d.setMonth(d.getMonth() + Number(months)); return d; },
+            parseDateLocal: (str) => {
+                if (!str) return new Date(0);
+                const parts = String(str).split('-');
+                return parts.length === 3 ? new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2])) : new Date(str);
+            },
+            normalizeQty: (n) => {
+                const val = Math.round((Number(n) || 0) * 100) / 100;
+                return Math.abs(val) < 0.01 ? 0 : val;
+            },
+            toPlain: (obj) => JSON.parse(JSON.stringify(obj))
+        };
+
+        const broadcastChannel = new BroadcastChannel('stock_pro_sync');
+        const { createApp, ref, computed, onMounted } = Vue;
+
+        createApp({
+            setup() {
+                const currentTab = ref(0);
+                const tabs = ref([
+                    { label: 'ภาพรวม', icon: 'fas fa-chart-pie' },
+                    { label: 'สินค้า (SKU)', icon: 'fas fa-boxes' },
+                    { label: 'ใบงานจ่าย', icon: 'fas fa-clipboard-list' },
+                    { label: 'วิเคราะห์', icon: 'fas fa-chart-line' },
+                    { label: 'บัตรคุมสต็อก (History)', icon: 'fas fa-book-open' },
+                    { label: 'ลูกค้า', icon: 'fas fa-users' },
+                    { label: 'ตั้งค่า & Cloud', icon: 'fas fa-sliders-h' }
+                ]);
+
+                const items = ref([]);
+                const batches = ref([]);
+                const transactions = ref([]);
+                const jobs = ref([]);
+                const customers = ref([]);
+                const audits = ref([]);
+                const backups = ref([]);
+
+                const sidebarOpen = ref(false);
+                const fabOpen = ref(false);
+                const themeMode = ref('light');
+                const accentTheme = ref('teal');
+                const globalSearch = ref('');
+
+                const stockSearch = ref('');
+                const stockTypeFilter = ref('');
+                const stockStatusFilter = ref('');
+
+                const jobFilter = ref('all');
+                const jobSearch = ref('');
+                const customerSearch = ref('');
+                const customerSearchText = ref('');
+
+                const analyticsPeriodLabel = ref('month');
+                const analytics = ref({ totalOut: 0, totalIn: 0, shippedCount: 0, customerCount: 0, topFreq: [], topQty: [] });
+
+                const historyPeriod = ref('all');
+                const historyFilter = ref({ search: '', customerOrRef: '', type: '', batchId: '', from: '', to: '' });
+
+                const modals = ref({
+                    product: false, transaction: false, job: false, customer: false,
+                    backup: false, detail: false, importStock: false, scanner: false,
+                    cloudSync: false, jobInspect: false, transfer: false
+                });
+
+                const modalProduct = ref({ id: '', code: '', type: 'เคมีภัณฑ์', chemType: '', location: 'WH1', minStock: 10, unitLabel: 'ถัง', shelfLifeMonths: 6, tankColor: '', netWeight: '', foilName: '', width: '', length: '', note: '' });
+                const modalTx = ref({ itemId: '', type: 'in', qty: '', batchId: '', mfgDate: Utils.todayStr(), lotNo: '', ref: '', note: '' });
+                const modalJob = ref({ id: '', customerId: '', items: [{ _rid: Utils.uid(), itemId: '', qty: '' }], note: '' });
+                const modalCustomer = ref({ id: '', name: '', phone: '', address: '' });
+
+                const detailItem = ref(null);
+                const detailBalance = ref(0);
+                const detailBatches = ref([]);
+                const inspectedJob = ref(null);
+                const stockFileData = ref(null);
+
+                // Batch Transfer / Split / Merge state
+                const transferItemId = ref('');
+                const transferBatches = ref([]);
+                const transferFrom = ref('');
+                const transferTo = ref('__NEW__');
+                const transferNewMfg = ref(Utils.todayStr());
+                const transferNewLotNo = ref('');
+                const transferQty = ref('');
+
+                // ===== SUPABASE AUTO-SYNC ENGINE =====
+                const cloudState = ref({ enabled: false, status: 'offline', url: '', anonKey: '', lastSyncTs: null });
+                const cloudForm = ref({ url: '', anonKey: '' });
+                let supabaseClient = null;
+
+                const cloudStatusText = computed(() => {
+                    if (!cloudState.value.enabled) return 'โหมดในเครื่อง (คลิกผูก Cloud ฟรี)';
+                    if (cloudState.value.status === 'syncing') return 'กำลังซิงค์ Cloud...';
+                    if (cloudState.value.status === 'online') return 'Cloud ซิงค์อัตโนมัติ';
+                    return 'ซิงค์ขัดข้อง';
+                });
+
+                function initSupabaseClient() {
+                    try {
+                        const savedUrl = localStorage.getItem('spp_sb_url') || '';
+                        const savedKey = localStorage.getItem('spp_sb_key') || '';
+                        cloudForm.value = { url: savedUrl, anonKey: savedKey };
+                        if (savedUrl && savedKey && window.supabase) {
+                            supabaseClient = window.supabase.createClient(savedUrl, savedKey);
+                            cloudState.value.enabled = true;
+                            cloudState.value.url = savedUrl;
+                            cloudState.value.anonKey = savedKey;
+                            cloudState.value.status = 'online';
+                            subscribeRealtime();
+                            pullAllFromCloud(true);
+                        }
+                    } catch (e) {
+                        console.warn('Supabase init error:', e);
+                    }
+                }
+
+                function subscribeRealtime() {
+                    if (!supabaseClient) return;
+                    supabaseClient.channel('stockpro-realtime')
+                        .on('postgres_changes', { event: '*', schema: 'public', table: 'stockpro_records' }, () => {
+                            pullAllFromCloud(true);
+                        })
+                        .subscribe();
+                }
+
+                async function pushRecordToCloud(tableName, record) {
+                    if (!supabaseClient || !cloudState.value.enabled) return;
+                    try {
+                        cloudState.value.status = 'syncing';
+                        await supabaseClient.from('stockpro_records').upsert({
+                            id: `${tableName}:${record.id}`,
+                            table_name: tableName,
+                            record_id: record.id,
+                            payload: Utils.toPlain(record),
+                            updated_at: Date.now()
+                        });
+                        cloudState.value.status = 'online';
+                        cloudState.value.lastSyncTs = Date.now();
+                    } catch (e) {
+                        cloudState.value.status = 'error';
+                    }
+                }
+
+                async function pushAllToCloud() {
+                    if (!supabaseClient) return;
+                    try {
+                        cloudState.value.status = 'syncing';
+                        const rows = [];
+                        const addRows = (tName, arr) => arr.forEach(r => rows.push({ id: `${tName}:${r.id}`, table_name: tName, record_id: r.id, payload: Utils.toPlain(r), updated_at: Date.now() }));
+                        addRows('items', items.value);
+                        addRows('batches', batches.value);
+                        addRows('transactions', transactions.value);
+                        addRows('jobs', jobs.value);
+                        addRows('customers', customers.value);
+                        if (rows.length > 0) {
+                            const { error } = await supabaseClient.from('stockpro_records').upsert(rows);
+                            if (error) throw error;
+                        }
+                        cloudState.value.status = 'online';
+                        cloudState.value.lastSyncTs = Date.now();
+                        toast(`☁️ ซิงค์ข้อมูล ${rows.length} รายการขึ้น Supabase สำเร็จ`, 'success');
+                    } catch (e) {
+                        cloudState.value.status = 'error';
+                        toast('❌ ซิงค์ขึ้น Cloud ไม่สำเร็จ: ' + (e.message || ''), 'error');
+                    }
+                }
+
+                async function pullAllFromCloud(silent = false) {
+                    if (!supabaseClient) return;
+                    try {
+                        cloudState.value.status = 'syncing';
+                        const { data, error } = await supabaseClient.from('stockpro_records').select('*');
+                        if (error) throw error;
+                        if (data && data.length > 0) {
+                            const byTable = { items: [], batches: [], transactions: [], jobs: [], customers: [] };
+                            data.forEach(row => {
+                                if (byTable[row.table_name] && row.payload) byTable[row.table_name].push(row.payload);
+                            });
+                            await db.transaction('rw', [db.items, db.batches, db.transactions, db.jobs, db.customers], async () => {
+                                if (byTable.items.length) await db.items.bulkPut(byTable.items);
+                                if (byTable.batches.length) await db.batches.bulkPut(byTable.batches);
+                                if (byTable.transactions.length) await db.transactions.bulkPut(byTable.transactions);
+                                if (byTable.jobs.length) await db.jobs.bulkPut(byTable.jobs);
+                                if (byTable.customers.length) await db.customers.bulkPut(byTable.customers);
+                            });
+                            await loadAll();
+                        }
+                        cloudState.value.status = 'online';
+                        cloudState.value.lastSyncTs = Date.now();
+                        if (!silent) toast('☁️ ดึงข้อมูลล่าสุดจาก Cloud เรียบร้อย', 'success');
+                    } catch (e) {
+                        cloudState.value.status = 'error';
+                        if (!silent) toast('❌ ดึงข้อมูลจาก Cloud ไม่สำเร็จ: ' + (e.message || ''), 'error');
+                    }
+                }
+
+                function saveCloudConfig() {
+                    const url = cloudForm.value.url.trim();
+                    const key = cloudForm.value.anonKey.trim();
+                    if (!url || !key) { toast('กรุณากรอก Supabase URL และ Anon Key', 'error'); return; }
+                    try {
+                        localStorage.setItem('spp_sb_url', url);
+                        localStorage.setItem('spp_sb_key', key);
+                        initSupabaseClient();
+                        pushAllToCloud();
+                        closeModal('cloudSync');
+                    } catch (e) {
+                        toast('❌ บันทึกการตั้งค่าไม่สำเร็จ', 'error');
+                    }
+                }
+
+                function disconnectCloud() {
+                    try {
+                        localStorage.removeItem('spp_sb_url');
+                        localStorage.removeItem('spp_sb_key');
+                    } catch (e) {}
+                    supabaseClient = null;
+                    cloudState.value = { enabled: false, status: 'offline', url: '', anonKey: '', lastSyncTs: null };
+                    toast('ตัดการเชื่อมต่อ Cloud แล้ว', 'warning');
+                    closeModal('cloudSync');
+                }
+
+                function copySupabaseSql() {
+                    const sql = `CREATE TABLE IF NOT EXISTS public.stockpro_records (
+  id TEXT PRIMARY KEY,
+  table_name TEXT NOT NULL,
+  record_id TEXT NOT NULL,
+  payload JSONB NOT NULL,
+  updated_at BIGINT
+);
+ALTER TABLE public.stockpro_records ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Allow public access" ON public.stockpro_records FOR ALL USING (true) WITH CHECK (true);`;
+                    navigator.clipboard?.writeText(sql);
+                    toast('📋 คัดลอกคำสั่ง SQL แล้ว! นำไปวางใน Supabase SQL Editor ได้เลย', 'success');
+                }
+
+                // ===== THEME =====
+                const accentOptions = [
+                    { key: 'teal', color: '#0d9488' }, { key: 'blue', color: '#2563eb' },
+                    { key: 'purple', color: '#7c3aed' }, { key: 'green', color: '#16a34a' },
+                    { key: 'amber', color: '#d97706' }, { key: 'rose', color: '#e11d48' }
+                ];
+                function toggleTheme() {
+                    themeMode.value = themeMode.value === 'light' ? 'dark' : 'light';
+                    document.documentElement.classList.toggle('dark', themeMode.value === 'dark');
+                    try { localStorage.setItem('spp_theme_mode', themeMode.value); } catch (e) {}
+                }
+                function setAccent(k) {
+                    accentTheme.value = k;
+                    document.documentElement.setAttribute('data-accent', k);
+                    try { localStorage.setItem('spp_theme_accent', k); } catch (e) {}
+                }
+
+                // ===== COMPUTED BALANCES & RUNNING STATEMENT =====
+                const activeItems = computed(() => items.value.filter(i => !i.deletedAt));
+                const filteredCustomers = computed(() => customers.value.filter(c => !c.deletedAt));
+
+                const itemById = computed(() => {
+                    const m = new Map();
+                    items.value.forEach(i => m.set(i.id, i));
+                    return m;
+                });
+                const batchById = computed(() => {
+                    const m = new Map();
+                    batches.value.forEach(b => m.set(b.id, b));
+                    return m;
+                });
+                const jobById = computed(() => {
+                    const m = new Map();
+                    jobs.value.forEach(j => {
+                        m.set(j.id, j);
+                        if (j.docNo) m.set(j.docNo, j);
+                        m.set('PJ-' + j.id, j);
+                    });
+                    return m;
+                });
+
+                // Running balance before & after every transaction
+                const runningBalanceMap = computed(() => {
+                    const byItem = {};
+                    for (const t of transactions.value) {
+                        if (t.status === 'cancelled') continue;
+                        (byItem[t.itemId] = byItem[t.itemId] || []).push(t);
+                    }
+                    const beforeMap = {};
+                    const afterMap = {};
+                    const currentBalMap = {};
+                    for (const itemId of Object.keys(byItem)) {
+                        const list = byItem[itemId].slice().sort((a, b) => (a.ts - b.ts) || String(a.id).localeCompare(String(b.id)));
+                        let running = 0;
+                        for (const tx of list) {
+                            beforeMap[tx.id] = Utils.normalizeQty(running);
+                            running = Utils.normalizeQty(running + Number(tx.qty || 0));
+                            afterMap[tx.id] = running;
+                        }
+                        currentBalMap[itemId] = running;
+                    }
+                    return { beforeMap, afterMap, currentBalMap };
+                });
+
+                function getBalance(itemId) {
+                    return runningBalanceMap.value.currentBalMap[itemId] || 0;
+                }
+
+                const reservedMap = computed(() => {
+                    const map = {};
+                    jobs.value.forEach(j => {
+                        if (j.status !== 'pending' || j.deletedAt) return;
+                        (j.items || []).forEach(it => {
+                            map[it.itemId] = (map[it.itemId] || 0) + (Number(it.qty) || 0);
+                        });
+                    });
+                    return map;
+                });
+
+                const batchMap = computed(() => {
+                    const map = {};
+                    batches.value.forEach(b => {
+                        if (b.qtyRemaining <= 0.01) return;
+                        (map[b.itemId] = map[b.itemId] || []).push(b);
+                    });
+                    Object.keys(map).forEach(k => map[k].sort((a, b) => Utils.parseDateLocal(a.mfgDate) - Utils.parseDateLocal(b.mfgDate)));
+                    return map;
+                });
+
+                function getBatches(itemId) { return batchMap.value[itemId] || []; }
+                function getItemObj(id) { return itemById.value.get(id); }
+                function getItemCode(id) { return itemById.value.get(id)?.code || null; }
+
+                function itemDisplayName(item) {
+                    if (!item) return '-';
+                    if (item.type === 'ฟอยล์') return [item.tankColor, item.foilName].filter(Boolean).join(' ') || '-';
+                    return item.chemType || '-';
+                }
+
+                function itemLocationOrSize(item) {
+                    if (!item) return '-';
+                    if (item.type === 'ฟอยล์') return [item.width ? `${item.width} mm` : '', item.location || ''].filter(Boolean).join(' · ') || '-';
+                    return item.location || '-';
+                }
+
+                function getItemStatus(item, bal) {
+                    const min = Number(item.minStock ?? 10);
+                    if (bal <= 0) return 'หมดสต็อก';
+                    if (bal <= min) return 'เหลือน้อย';
+                    return 'มีสต็อก';
+                }
+
+                const stockStats = computed(() => {
+                    let inStock = 0, lowStock = 0, outOfStock = 0;
+                    activeItems.value.forEach(it => {
+                        const st = getItemStatus(it, getBalance(it.id));
+                        if (st === 'หมดสต็อก') outOfStock++;
+                        else if (st === 'เหลือน้อย') lowStock++;
+                        else inStock++;
+                    });
+                    return { inStock, lowStock, outOfStock };
+                });
+
+                const filteredStockItems = computed(() => {
+                    let list = activeItems.value.map(it => {
+                        const bal = getBalance(it.id);
+                        return {
+                            ...it,
+                            balance: bal,
+                            reserved: reservedMap.value[it.id] || 0,
+                            batchCount: (batchMap.value[it.id] || []).length,
+                            status: getItemStatus(it, bal)
+                        };
+                    });
+                    const q = stockSearch.value.toLowerCase().trim();
+                    if (q) {
+                        list = list.filter(it =>
+                            (it.code || '').toLowerCase().includes(q) ||
+                            (it.chemType || '').toLowerCase().includes(q) ||
+                            (it.foilName || '').toLowerCase().includes(q) ||
+                            (it.location || '').toLowerCase().includes(q) ||
+                            (it.tankColor || '').toLowerCase().includes(q)
+                        );
+                    }
+                    if (stockTypeFilter.value) list = list.filter(it => it.type === stockTypeFilter.value);
+                    if (stockStatusFilter.value) list = list.filter(it => it.status === stockStatusFilter.value);
+                    list.sort((a, b) => (a.type === b.type ? (a.code || '').localeCompare(b.code || '') : a.type === 'เคมีภัณฑ์' ? -1 : 1));
+                    return list;
+                });
+
+                // ===== ENRICHED TRANSACTIONS FOR TRACEABILITY =====
+                function enrichTransaction(t) {
+                    const item = itemById.value.get(t.itemId);
+                    const batch = batchById.value.get(t.batchId);
+                    const mfg = batch?.mfgDate || t.mfgDate || '-';
+                    const lot = batch?.lotNo ? ` · Lot ${batch.lotNo}` : '';
+                    const job = t.ref ? jobById.value.get(t.ref) : null;
+                    const refDisplay = job?.docNo || t.ref || '';
+                    const customerOrNote = job ? (job.customerName || job.customer) : (t.note || '');
+                    return {
+                        ...t,
+                        itemCode: item ? item.code : '??',
+                        itemName: item ? itemDisplayName(item) : '-',
+                        batchLabel: mfg !== '-' ? `MFG ${mfg}${lot}` : '-',
+                        refDisplay,
+                        customerOrNote,
+                        balanceBefore: runningBalanceMap.value.beforeMap[t.id] ?? 0,
+                        balanceAfter: runningBalanceMap.value.afterMap[t.id] ?? 0
+                    };
+                }
+
+                const recentTransactions = computed(() => {
+                    return transactions.value
+                        .filter(t => t.status !== 'cancelled')
+                        .slice()
+                        .sort((a, b) => b.ts - a.ts)
+                        .slice(0, 6)
+                        .map(enrichTransaction);
+                });
+
+                const filteredHistoryView = computed(() => {
+                    let list = transactions.value.filter(t => t.status !== 'cancelled').map(enrichTransaction);
+                    const now = new Date();
+                    if (historyPeriod.value === 'today') {
+                        const start = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+                        list = list.filter(t => t.ts >= start);
+                    } else if (historyPeriod.value === 'week') {
+                        list = list.filter(t => t.ts >= Utils.getWeekStart(now).getTime());
+                    } else if (historyPeriod.value === 'month') {
+                        list = list.filter(t => t.ts >= Utils.getMonthStart(now).getTime());
+                    }
+                    if (historyFilter.value.batchId) {
+                        list = list.filter(t => t.batchId === historyFilter.value.batchId);
+                    }
+                    const q = historyFilter.value.search.toLowerCase().trim();
+                    if (q) {
+                        list = list.filter(t =>
+                            t.itemCode.toLowerCase().includes(q) ||
+                            t.itemName.toLowerCase().includes(q) ||
+                            t.batchLabel.toLowerCase().includes(q)
+                        );
+                    }
+                    const cref = historyFilter.value.customerOrRef.toLowerCase().trim();
+                    if (cref) {
+                        list = list.filter(t =>
+                            (t.refDisplay || '').toLowerCase().includes(cref) ||
+                            (t.customerOrNote || '').toLowerCase().includes(cref) ||
+                            (t.ref || '').toLowerCase().includes(cref)
+                        );
+                    }
+                    if (historyFilter.value.type) list = list.filter(t => t.type === historyFilter.value.type);
+                    if (historyFilter.value.from) {
+                        const fromTs = new Date(historyFilter.value.from + 'T00:00:00').getTime();
+                        list = list.filter(t => t.ts >= fromTs);
+                    }
+                    if (historyFilter.value.to) {
+                        const toTs = new Date(historyFilter.value.to + 'T23:59:59.999').getTime();
+                        list = list.filter(t => t.ts <= toTs);
+                    }
+                    list.sort((a, b) => b.ts - a.ts);
+                    return list;
+                });
+
+                const historySummary = computed(() => {
+                    let totalIn = 0, totalOut = 0, totalAdjust = 0;
+                    filteredHistoryView.value.forEach(t => {
+                        if (t.type === 'in') totalIn += Number(t.qty) || 0;
+                        else if (t.type === 'out') totalOut += Math.abs(Number(t.qty) || 0);
+                        else totalAdjust += Number(t.qty) || 0;
+                    });
+                    return {
+                        count: filteredHistoryView.value.length,
+                        totalIn: Utils.normalizeQty(totalIn),
+                        totalOut: Utils.normalizeQty(totalOut),
+                        totalAdjust: Utils.normalizeQty(totalAdjust)
+                    };
+                });
+
+                function getBatchLabel(batchId) {
+                    const b = batchById.value.get(batchId);
+                    return b ? `MFG ${b.mfgDate}${b.lotNo ? ' (' + b.lotNo + ')' : ''}` : batchId;
+                }
+
+                // ===== TRACEABILITY NAVIGATION HELPERS =====
+                function traceProductHistory(skuCode) {
+                    closeModal('detail');
+                    historyFilter.value = { search: skuCode, customerOrRef: '', type: '', batchId: '', from: '', to: '' };
+                    historyPeriod.value = 'all';
+                    goToTab(4);
+                }
+
+                function traceBatchHistory(batchId) {
+                    closeModal('detail');
+                    historyFilter.value = { search: '', customerOrRef: '', type: '', batchId, from: '', to: '' };
+                    historyPeriod.value = 'all';
+                    goToTab(4);
+                }
+
+                function traceCustomerHistory(customerName) {
+                    historyFilter.value = { search: '', customerOrRef: customerName, type: '', batchId: '', from: '', to: '' };
+                    historyPeriod.value = 'all';
+                    goToTab(4);
+                }
+
+                function resetHistoryFilters() {
+                    historyFilter.value = { search: '', customerOrRef: '', type: '', batchId: '', from: '', to: '' };
+                    historyPeriod.value = 'all';
+                }
+
+                const inspectedJobTxs = computed(() => {
+                    if (!inspectedJob.value) return [];
+                    const j = inspectedJob.value;
+                    return transactions.value
+                        .filter(t => t.status !== 'cancelled' && (t.ref === j.docNo || t.ref === `PJ-${j.id}` || t.ref === j.id))
+                        .map(enrichTransaction);
+                });
+
+                function inspectJob(job) {
+                    inspectedJob.value = job;
+                    modals.value.jobInspect = true;
+                }
+
+                function inspectReference(refStr) {
+                    const job = jobById.value.get(refStr);
+                    if (job) {
+                        inspectJob(job);
+                    } else {
+                        historyFilter.value.customerOrRef = refStr;
+                        goToTab(4);
+                    }
+                }
+
+                // ===== JOBS & RUNNING DOCUMENT NUMBER =====
+                function generateNextJobDocNo() {
+                    const now = new Date();
+                    const ym = `${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}`;
+                    const prefix = `JOB-${ym}-`;
+                    let maxSeq = 0;
+                    jobs.value.forEach(j => {
+                        if (j.docNo && j.docNo.startsWith(prefix)) {
+                            const seq = parseInt(j.docNo.slice(prefix.length), 10);
+                            if (seq > maxSeq) maxSeq = seq;
+                        }
+                    });
+                    return `${prefix}${String(maxSeq + 1).padStart(3, '0')}`;
+                }
+
+                const jobCounts = computed(() => {
+                    const active = jobs.value.filter(j => !j.deletedAt);
+                    return {
+                        all: active.length,
+                        pending: active.filter(j => j.status === 'pending').length,
+                        shipped: active.filter(j => j.status === 'shipped').length,
+                        cancelled: active.filter(j => j.status === 'cancelled').length
+                    };
+                });
+
+                const filteredJobs = computed(() => {
+                    let list = jobs.value.filter(j => !j.deletedAt);
+                    if (jobFilter.value !== 'all') list = list.filter(j => j.status === jobFilter.value);
+                    const q = jobSearch.value.toLowerCase().trim();
+                    if (q) {
+                        list = list.filter(j =>
+                            (j.customerName || j.customer || '').toLowerCase().includes(q) ||
+                            (j.docNo || '').toLowerCase().includes(q)
+                        );
+                    }
+                    return list.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+                });
+
+                const filteredCustomersList = computed(() => {
+                    const q = customerSearch.value.toLowerCase().trim();
+                    return filteredCustomers.value.filter(c => !q || (c.name || '').toLowerCase().includes(q) || (c.phone || '').includes(q));
+                });
+
+                const topProducts = computed(() => {
+                    const from = Date.now() - 30 * 86400000;
+                    const map = {};
+                    jobs.value.filter(j => j.status === 'shipped' && !j.deletedAt && (j.shippedAt || j.createdAt) >= from).forEach(j => {
+                        (j.items || []).forEach(it => { map[it.itemId] = (map[it.itemId] || 0) + Number(it.qty || 0); });
+                    });
+                    return Object.entries(map).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([id, totalQty]) => ({ code: getItemCode(id) || id, totalQty }));
+                });
+
+                const expiryAlerts = computed(() => {
+                    const alerts = [];
+                    const today = new Date();
+                    batches.value.forEach(b => {
+                        if (b.qtyRemaining <= 0) return;
+                        const item = itemById.value.get(b.itemId);
+                        if (!item || item.deletedAt || !item.shelfLifeMonths) return;
+                        const exp = Utils.addMonths(Utils.parseDateLocal(b.mfgDate), item.shelfLifeMonths);
+                        const daysLeft = Utils.daysBetween(today, exp);
+                        if (daysLeft <= 30) alerts.push({ ...b, itemCode: item.code, daysLeft });
+                    });
+                    return alerts.sort((a, b) => a.daysLeft - b.daysLeft);
+                });
+
+                // ===== SEED & LOAD DATA =====
+                async function seedDefaultData() {
+                    if ((await db.items.count()) > 0) return;
+                    const defaults = [
+                        { code: "POLYOL AR-301", type: "เคมีภัณฑ์", chemType: "Formulated Polyol", location: "WH1", minStock: 10, tankColor: "เขียว", netWeight: 210, unitLabel: "ถัง", shelfLifeMonths: 6 },
+                        { code: "POLYOL AR-251", type: "เคมีภัณฑ์", chemType: "Formulated Polyol", location: "WH1", minStock: 10, tankColor: "เขียว", netWeight: 210, unitLabel: "ถัง", shelfLifeMonths: 6 },
+                        { code: "WANNATE PM-200", type: "เคมีภัณฑ์", chemType: "Polymethylene Polyphenylene Isocyanate", location: "WH2", minStock: 8, tankColor: "แดง", netWeight: 250, unitLabel: "ถัง", shelfLifeMonths: 12 },
+                        { code: "BS80WS เงิน/ขาว", type: "ฟอยล์", foilName: "เปลือกส้ม", foilColor: "ขาว/เงิน", location: "WH3", minStock: 5, width: 835, length: 1000, unitLabel: "ม้วน", tankColor: "ขาว/เงิน", netWeight: 80, shelfLifeMonths: 0 },
+                        { code: "BS80BS ดำ/เงิน", type: "ฟอยล์", foilName: "เปลือกส้ม", foilColor: "ดำ/เงิน", location: "WH3", minStock: 5, width: 835, length: 1000, unitLabel: "ม้วน", tankColor: "ดำ/เงิน", netWeight: 80, shelfLifeMonths: 0 },
+                        { code: "GBNPET12T ขาว/เงิน", type: "ฟอยล์", foilName: "เปลือกส้ม", foilColor: "ขาว/เงิน", location: "WH3", minStock: 5, width: 835, length: 1000, unitLabel: "ม้วน", tankColor: "ขาว/เงิน", netWeight: 80, shelfLifeMonths: 0 },
+                        { code: "WANOL F3156A", type: "เคมีภัณฑ์", chemType: "POLYETHER POLYOL", location: "WH1", minStock: 6, tankColor: "เขียว", netWeight: 210, unitLabel: "ถัง", shelfLifeMonths: 12 },
+                        { code: "MC", type: "เคมีภัณฑ์", chemType: "Dichloromethane", location: "WH2", minStock: 6, tankColor: "น้ำเงิน", netWeight: 270, unitLabel: "ถัง", shelfLifeMonths: 12 }
+                    ];
+                    for (const d of defaults) {
+                        await db.items.add({ id: Utils.uid(), ...d, note: '', createdAt: Date.now() });
+                    }
+                }
+
+                async function loadAll() {
+                    const [its, bts, txs, jbs, cus, aud, bks] = await Promise.all([
+                        db.items.toArray(), db.batches.toArray(), db.transactions.toArray(),
+                        db.jobs.toArray(), db.customers.toArray(), db.audit.toArray(), db.backups.toArray()
+                    ]);
+                    items.value = its;
+                    batches.value = bts;
+                    transactions.value = txs;
+                    jobs.value = jbs;
+                    customers.value = cus;
+                    audits.value = aud;
+                    backups.value = bks.map(({ id, filename, ts, size }) => ({ id, filename, ts, size })).sort((a, b) => b.ts - a.ts);
+                    loadAnalytics();
+                    setTimeout(() => { renderChart(); renderDonut(); }, 80);
+                }
+
+                // ===== CRUD OPERATIONS =====
+                async function saveProduct() {
+                    const d = modalProduct.value;
+                    if (!d.code.trim()) { toast('กรุณากรอกรหัส SKU', 'error'); return; }
+                    const payload = {
+                        id: d.id || Utils.uid(),
+                        code: d.code.trim(),
+                        type: d.type || 'เคมีภัณฑ์',
+                        chemType: d.type === 'เคมีภัณฑ์' ? (d.chemType || '') : null,
+                        location: d.location || 'WH1',
+                        minStock: Number(d.minStock ?? 10),
+                        unitLabel: d.unitLabel || 'ถัง',
+                        shelfLifeMonths: Number(d.shelfLifeMonths) || 0,
+                        tankColor: d.tankColor || '',
+                        netWeight: Number(d.netWeight) || 0,
+                        foilName: d.type === 'ฟอยล์' ? (d.foilName || '') : null,
+                        width: d.type === 'ฟอยล์' ? (Number(d.width) || null) : null,
+                        length: d.type === 'ฟอยล์' ? (Number(d.length) || null) : null,
+                        note: d.note || '',
+                        createdAt: d.createdAt || Date.now()
+                    };
+                    await db.items.put(Utils.toPlain(payload));
+                    await pushRecordToCloud('items', payload);
+                    broadcastChannel.postMessage({ type: 'DATA_CHANGED' });
+                    toast(`✅ บันทึกสินค้า ${payload.code} เรียบร้อย`, 'success');
+                    closeModal('product');
+                    await loadAll();
+                }
+
+                async function deleteProduct(id) {
+                    if (getBalance(id) > 0) { toast('⚠️ สินค้ายังมียอดคงเหลือ ต้องปรับเป็น 0 ก่อนลบ', 'warning'); return; }
+                    const item = await db.items.get(id);
+                    if (!item) return;
+                    item.deletedAt = Date.now();
+                    await db.items.put(Utils.toPlain(item));
+                    await pushRecordToCloud('items', item);
+                    toast('🗑️ ลบสินค้าเรียบร้อย', 'success');
+                    await loadAll();
+                }
+
+                function previewBalance(itemId, type, qty) {
+                    const cur = getBalance(itemId);
+                    const q = Number(qty) || 0;
+                    return type === 'adjust_minus' ? Utils.normalizeQty(cur - Math.abs(q)) : Utils.normalizeQty(cur + Math.abs(q));
+                }
+
+                async function saveTransaction() {
+                    const d = modalTx.value;
+                    if (!d.itemId) { toast('กรุณาเลือกสินค้า', 'error'); return; }
+                    const rawQty = Number(d.qty);
+                    if (!rawQty || rawQty <= 0) { toast('กรุณาระบุจำนวนที่มากกว่า 0', 'error'); return; }
+
+                    let type = d.type === 'in' ? 'in' : 'adjust';
+                    let qty = d.type === 'adjust_minus' ? -Math.abs(rawQty) : Math.abs(rawQty);
+                    let batchRecord = null;
+                    let txRecord = null;
+
+                    try {
+                        await db.transaction('rw', [db.batches, db.transactions], async () => {
+                            if (type === 'in') {
+                                const mfg = d.mfgDate || Utils.todayStr();
+                                batchRecord = {
+                                    id: Utils.uid(),
+                                    itemId: d.itemId,
+                                    mfgDate: mfg,
+                                    lotNo: d.lotNo || '',
+                                    qtyReceived: qty,
+                                    qtyRemaining: qty,
+                                    createdAt: Date.now()
+                                };
+                                await db.batches.put(Utils.toPlain(batchRecord));
+                            } else {
+                                const bs = getBatches(d.itemId);
+                                const targetBatch = d.batchId ? await db.batches.get(d.batchId) : bs[0];
+                                if (!targetBatch) throw new Error('ไม่พบล็อตสำหรับปรับยอด');
+                                if (targetBatch.qtyRemaining + qty < 0) throw new Error(`ยอดในล็อตเหลือ ${targetBatch.qtyRemaining} ไม่พอปรับลด`);
+                                targetBatch.qtyRemaining = Utils.normalizeQty(targetBatch.qtyRemaining + qty);
+                                batchRecord = targetBatch;
+                                await db.batches.put(Utils.toPlain(batchRecord));
+                            }
+                            txRecord = {
+                                id: Utils.uid(),
+                                itemId: d.itemId,
+                                batchId: batchRecord.id,
+                                type,
+                                qty: Utils.normalizeQty(qty),
+                                ref: d.ref || (type === 'in' ? 'RCV-' + Utils.todayStr().replace(/-/g, '') : 'ADJ'),
+                                note: d.note || '',
+                                ts: Date.now(),
+                                status: 'active',
+                                mfgDate: batchRecord.mfgDate
+                            };
+                            await db.transactions.add(Utils.toPlain(txRecord));
+                        });
+                        if (batchRecord) await pushRecordToCloud('batches', batchRecord);
+                        if (txRecord) await pushRecordToCloud('transactions', txRecord);
+                        broadcastChannel.postMessage({ type: 'DATA_CHANGED' });
+                        toast('✅ บันทึกรายการสต็อกเรียบร้อย', 'success');
+                        closeModal('transaction');
+                        await loadAll();
+                    } catch (e) {
+                        toast('❌ ' + e.message, 'error');
+                    }
+                }
+
+                async function saveJob() {
+                    const cname = customerSearchText.value.trim();
+                    if (!cname) { toast('กรุณาระบุชื่อลูกค้า', 'error'); return; }
+                    let cust = filteredCustomers.value.find(c => c.name.toLowerCase() === cname.toLowerCase());
+                    if (!cust) {
+                        cust = { id: Utils.uid(), name: cname, phone: '', address: '', createdAt: Date.now() };
+                        await db.customers.add(Utils.toPlain(cust));
+                        await pushRecordToCloud('customers', cust);
+                    }
+                    const validItems = modalJob.value.items
+                        .filter(i => i.itemId && Number(i.qty) > 0)
+                        .map(i => ({ itemId: i.itemId, qty: Number(i.qty) }));
+                    if (validItems.length === 0) { toast('กรุณาเลือกสินค้าและจำนวนอย่างน้อย 1 รายการ', 'error'); return; }
+
+                    const existing = modalJob.value.id ? await db.jobs.get(modalJob.value.id) : null;
+                    const jobPayload = {
+                        id: existing?.id || Utils.uid(),
+                        docNo: existing?.docNo || generateNextJobDocNo(),
+                        customerId: cust.id,
+                        customerName: cust.name,
+                        customer: cust.name,
+                        items: validItems,
+                        note: modalJob.value.note || '',
+                        status: existing?.status || 'pending',
+                        createdAt: existing?.createdAt || Date.now(),
+                        shippedAt: existing?.shippedAt || null
+                    };
+                    await db.jobs.put(Utils.toPlain(jobPayload));
+                    await pushRecordToCloud('jobs', jobPayload);
+                    broadcastChannel.postMessage({ type: 'DATA_CHANGED' });
+                    toast(`✅ บันทึกใบงาน ${jobPayload.docNo} เรียบร้อย`, 'success');
+                    closeModal('job');
+                    await loadAll();
+                }
+
+                async function shipJob(jobId) {
+                    const job = await db.jobs.get(jobId);
+                    if (!job || job.status !== 'pending') return;
+                    const touchedBatches = [];
+                    const createdTxs = [];
+                    try {
+                        await db.transaction('rw', [db.jobs, db.batches, db.transactions], async () => {
+                            for (const it of job.items) {
+                                const bal = getBalance(it.itemId);
+                                if (bal < it.qty) throw new Error(`สต็อก ${getItemCode(it.itemId)} มีไม่พอจ่าย (เหลือ ${bal})`);
+                                let rem = Number(it.qty);
+                                const bs = await db.batches.where('itemId').equals(it.itemId).and(b => b.qtyRemaining > 0.01).toArray();
+                                bs.sort((a, b) => Utils.parseDateLocal(a.mfgDate) - Utils.parseDateLocal(b.mfgDate));
+                                for (const b of bs) {
+                                    if (rem <= 0.01) break;
+                                    const take = Math.min(rem, b.qtyRemaining);
+                                    b.qtyRemaining = Utils.normalizeQty(b.qtyRemaining - take);
+                                    await db.batches.put(Utils.toPlain(b));
+                                    touchedBatches.push(b);
+                                    const tx = {
+                                        id: Utils.uid(),
+                                        itemId: it.itemId,
+                                        batchId: b.id,
+                                        type: 'out',
+                                        qty: -Utils.normalizeQty(take),
+                                        ref: job.docNo || `PJ-${job.id}`,
+                                        note: job.customerName || job.customer || '',
+                                        ts: Date.now(),
+                                        status: 'active',
+                                        mfgDate: b.mfgDate
+                                    };
+                                    await db.transactions.add(Utils.toPlain(tx));
+                                    createdTxs.push(tx);
+                                    rem = Utils.normalizeQty(rem - take);
+                                }
+                            }
+                            job.status = 'shipped';
+                            job.shippedAt = Date.now();
+                            await db.jobs.put(Utils.toPlain(job));
+                        });
+                        await pushRecordToCloud('jobs', job);
+                        for (const b of touchedBatches) await pushRecordToCloud('batches', b);
+                        for (const t of createdTxs) await pushRecordToCloud('transactions', t);
+                        broadcastChannel.postMessage({ type: 'DATA_CHANGED' });
+                        toast(`🚚 ตัดจ่ายใบงาน ${job.docNo || job.id} เรียบร้อย`, 'success');
+                        await loadAll();
+                    } catch (e) {
+                        toast('❌ ' + e.message, 'error');
+                    }
+                }
+
+                async function reverseShipmentPrompt(jobId) {
+                    const job = await db.jobs.get(jobId);
+                    if (!job) return;
+                    const refKey = job.docNo || `PJ-${job.id}`;
+                    const txs = await db.transactions.where('ref').anyOf([refKey, `PJ-${job.id}`, job.id]).toArray();
+                    await db.transaction('rw', [db.jobs, db.batches, db.transactions], async () => {
+                        for (const tx of txs) {
+                            if (tx.status === 'cancelled') continue;
+                            const b = await db.batches.get(tx.batchId);
+                            if (b) {
+                                b.qtyRemaining = Utils.normalizeQty(b.qtyRemaining + Math.abs(tx.qty));
+                                await db.batches.put(Utils.toPlain(b));
+                                await pushRecordToCloud('batches', b);
+                            }
+                            tx.status = 'cancelled';
+                            await db.transactions.put(Utils.toPlain(tx));
+                            await pushRecordToCloud('transactions', tx);
+                        }
+                        job.status = 'pending';
+                        job.shippedAt = null;
+                        await db.jobs.put(Utils.toPlain(job));
+                        await pushRecordToCloud('jobs', job);
+                    });
+                    toast(`↩️ ดึงคืนสต็อกจากใบงาน ${job.docNo || job.id} เรียบร้อย`, 'success');
+                    await loadAll();
+                }
+
+                async function cancelJob(jobId) {
+                    const job = await db.jobs.get(jobId);
+                    if (!job) return;
+                    job.status = 'cancelled';
+                    await db.jobs.put(Utils.toPlain(job));
+                    await pushRecordToCloud('jobs', job);
+                    toast('🚫 ยกเลิกใบงานแล้ว', 'warning');
+                    await loadAll();
+                }
+
+                async function saveCustomer() {
+                    const d = modalCustomer.value;
+                    if (!d.name.trim()) { toast('กรุณาระบุชื่อลูกค้า', 'error'); return; }
+                    const payload = { id: d.id || Utils.uid(), name: d.name.trim(), phone: d.phone || '', address: d.address || '', createdAt: Date.now() };
+                    await db.customers.put(Utils.toPlain(payload));
+                    await pushRecordToCloud('customers', payload);
+                    toast('✅ บันทึกข้อมูลลูกค้าเรียบร้อย', 'success');
+                    closeModal('customer');
+                    await loadAll();
+                }
+
+                async function deleteCustomer(id) {
+                    const c = await db.customers.get(id);
+                    if (!c) return;
+                    c.deletedAt = Date.now();
+                    await db.customers.put(Utils.toPlain(c));
+                    await pushRecordToCloud('customers', c);
+                    toast('🗑️ ลบข้อมูลลูกค้าแล้ว', 'success');
+                    await loadAll();
+                }
+
+                // ===== ANALYTICS & CHARTS =====
+                function loadAnalytics() {
+                    const days = analyticsPeriodLabel.value === 'month' ? 30 : analyticsPeriodLabel.value === 'quarter' ? 90 : analyticsPeriodLabel.value === 'year' ? 365 : 0;
+                    const from = days === 0 ? 0 : Date.now() - days * 86400000;
+                    let totalOut = 0, totalIn = 0;
+                    transactions.value.forEach(t => {
+                        if (t.status !== 'cancelled' && t.ts >= from) {
+                            if (t.type === 'in') totalIn += Number(t.qty) || 0;
+                            else if (t.type === 'out') totalOut += Math.abs(Number(t.qty) || 0);
+                        }
+                    });
+                    const shipped = jobs.value.filter(j => j.status === 'shipped' && !j.deletedAt && (j.shippedAt || j.createdAt) >= from);
+                    const freq = {}, qtyMap = {};
+                    shipped.forEach(j => {
+                        const name = j.customerName || j.customer || 'ไม่ระบุ';
+                        freq[name] = (freq[name] || 0) + 1;
+                        (j.items || []).forEach(it => { qtyMap[name] = (qtyMap[name] || 0) + (Number(it.qty) || 0); });
+                    });
+                    analytics.value = {
+                        totalOut: Utils.normalizeQty(totalOut),
+                        totalIn: Utils.normalizeQty(totalIn),
+                        shippedCount: shipped.length,
+                        customerCount: Object.keys(freq).length,
+                        topFreq: Object.entries(freq).sort((a, b) => b[1] - a[1]).map(([name, count]) => ({ name, count })),
+                        topQty: Object.entries(qtyMap).sort((a, b) => b[1] - a[1]).map(([name, qty]) => ({ name, qty }))
+                    };
+                }
+
+                let barChart = null, donutChart = null;
+                function renderChart() {
+                    if (typeof Chart === 'undefined') return;
+                    const canvas = document.getElementById('dashChart');
+                    if (!canvas) return;
+                    if (barChart) barChart.destroy();
+                    const labels = [], inData = [], outData = [];
+                    for (let i = 6; i >= 0; i--) {
+                        const d = new Date(Date.now() - i * 86400000);
+                        labels.push(d.toLocaleDateString('th-TH', { weekday: 'short', day: 'numeric' }));
+                        const s = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+                        const e = s + 86399999;
+                        let tin = 0, tout = 0;
+                        transactions.value.forEach(t => {
+                            if (t.status !== 'cancelled' && t.ts >= s && t.ts <= e) {
+                                if (t.type === 'in') tin += t.qty;
+                                else if (t.type === 'out') tout += Math.abs(t.qty);
+                            }
+                        });
+                        inData.push(Utils.normalizeQty(tin));
+                        outData.push(Utils.normalizeQty(tout));
+                    }
+                    barChart = new Chart(canvas.getContext('2d'), {
+                        type: 'bar',
+                        data: {
+                            labels,
+                            datasets: [
+                                { label: 'รับเข้า (+)', data: inData, backgroundColor: '#0d9488', borderRadius: 6 },
+                                { label: 'จ่ายออก (-)', data: outData, backgroundColor: '#ef4444', borderRadius: 6 }
+                            ]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false }
+                    });
+                }
+
+                function renderDonut() {
+                    if (typeof Chart === 'undefined') return;
+                    const canvas = document.getElementById('donutChart');
+                    if (!canvas) return;
+                    if (donutChart) donutChart.destroy();
+                    const st = stockStats.value;
+                    donutChart = new Chart(canvas.getContext('2d'), {
+                        type: 'doughnut',
+                        data: {
+                            labels: ['พร้อมจ่าย', 'เหลือน้อย', 'หมดสต็อก'],
+                            datasets: [{ data: [st.inStock, st.lowStock, st.outOfStock], backgroundColor: ['#10b981', '#f59e0b', '#ef4444'], borderWidth: 0 }]
+                        },
+                        options: { responsive: true, maintainAspectRatio: false, cutout: '68%', plugins: { legend: { display: false } } }
+                    });
+                }
+
+                // ===== EXPORT & BACKUP =====
+                function exportHistory() {
+                    if (typeof XLSX === 'undefined') { toast('ไลบรารี Excel ยังไม่พร้อม', 'error'); return; }
+                    const rows = filteredHistoryView.value.map(h => ({
+                        'วัน-เวลา': Utils.fmtDateTime(h.ts),
+                        'รหัสสินค้า (SKU)': h.itemCode,
+                        'รายละเอียด': h.itemName,
+                        'ประเภท': h.type === 'in' ? 'รับเข้า' : h.type === 'out' ? 'จ่ายออก' : 'ปรับยอด',
+                        'ล็อตผลิต (Lot/MFG)': h.batchLabel,
+                        'เอกสารอ้างอิง': h.refDisplay,
+                        'ลูกค้า/หมายเหตุ': h.customerOrNote,
+                        'ยอดก่อนทำรายการ': h.balanceBefore,
+                        'จำนวนที่เปลี่ยน': h.qty,
+                        'คงเหลือสะสมหลังทำรายการ': h.balanceAfter
+                    }));
+                    const wb = XLSX.utils.book_new();
+                    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(rows), 'StockCard_History');
+                    XLSX.writeFile(wb, `StockPro-History-${Utils.todayStr()}.xlsx`);
+                    toast('📥 ส่งออกตารางประวัติเป็นไฟล์ Excel เรียบร้อย', 'success');
+                }
+
+                async function createBackup() {
+                    const snap = {
+                        items: await db.items.toArray(),
+                        batches: await db.batches.toArray(),
+                        transactions: await db.transactions.toArray(),
+                        jobs: await db.jobs.toArray(),
+                        customers: await db.customers.toArray(),
+                        _meta: { appVersion: APP_VERSION, createdAt: Date.now() }
+                    };
+                    const json = JSON.stringify(snap, null, 2);
+                    const filename = `StockPro-Backup-${Utils.todayStr()}.json`;
+                    await db.backups.add({ id: Utils.uid(), filename, ts: Date.now(), size: json.length, data: json });
+                    const blob = new Blob([json], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url; a.download = filename; a.click();
+                    URL.revokeObjectURL(url);
+                    toast('💾 ดาวน์โหลดไฟล์ Backup เรียบร้อย', 'success');
+                    await loadAll();
+                }
+
+                function triggerRestore() { document.getElementById('restoreInput')?.click(); }
+
+                function restoreBackup(ev) {
+                    const f = ev.target.files?.[0];
+                    if (!f) return;
+                    const reader = new FileReader();
+                    reader.onload = async (e) => {
+                        try {
+                            const data = JSON.parse(e.target.result);
+                            await db.transaction('rw', [db.items, db.batches, db.transactions, db.jobs, db.customers], async () => {
+                                await db.items.clear(); await db.batches.clear(); await db.transactions.clear(); await db.jobs.clear(); await db.customers.clear();
+                                if (data.items?.length) await db.items.bulkAdd(data.items);
+                                if (data.batches?.length) await db.batches.bulkAdd(data.batches);
+                                if (data.transactions?.length) await db.transactions.bulkAdd(data.transactions);
+                                if (data.jobs?.length) await db.jobs.bulkAdd(data.jobs);
+                                if (data.customers?.length) await db.customers.bulkAdd(data.customers);
+                            });
+                            toast('✅ กู้คืนข้อมูลจากไฟล์ Backup สำเร็จ', 'success');
+                            closeModal('backup');
+                            await loadAll();
+                        } catch (err) {
+                            toast('❌ ไฟล์ไม่ถูกต้อง: ' + err.message, 'error');
+                        }
+                    };
+                    reader.readAsText(f);
+                }
+
+                function onStockFileChange(e) {
+                    const f = e.target.files?.[0];
+                    if (!f) return;
+                    const reader = new FileReader();
+                    reader.onload = (ev) => {
+                        const wb = XLSX.read(ev.target.result, { type: 'array' });
+                        stockFileData.value = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]]);
+                    };
+                    reader.readAsArrayBuffer(f);
+                }
+
+                async function importStockCount() {
+                    if (!stockFileData.value) return;
+                    let count = 0;
+                    for (const row of stockFileData.value) {
+                        const sku = String(row.SKU || '').trim();
+                        const counted = parseFloat(row['นับได้จริง']);
+                        const item = activeItems.value.find(i => i.code === sku);
+                        if (!item || isNaN(counted)) continue;
+                        const diff = Utils.normalizeQty(counted - getBalance(item.id));
+                        if (Math.abs(diff) < 0.01) continue;
+                        const b = { id: Utils.uid(), itemId: item.id, mfgDate: Utils.todayStr(), lotNo: 'AUDIT', qtyReceived: Math.max(0, diff), qtyRemaining: Math.max(0, counted), createdAt: Date.now() };
+                        await db.batches.put(b);
+                        await db.transactions.add({ id: Utils.uid(), itemId: item.id, batchId: b.id, type: 'adjust', qty: diff, ref: 'EXCEL-COUNT', note: 'ปรับยอดจากไฟล์นับสต็อก', ts: Date.now(), status: 'active', mfgDate: b.mfgDate });
+                        count++;
+                    }
+                    stockFileData.value = null;
+                    closeModal('importStock');
+                    toast(`✅ ปรับสต็อกจากไฟล์ Excel สำเร็จ ${count} รายการ`, 'success');
+                    await loadAll();
+                }
+
+                // ===== BATCH TRANSFER / SPLIT / MERGE & RECONCILE =====
+                const transferPreview = computed(() => {
+                    const fromB = transferBatches.value.find(b => b.id === transferFrom.value);
+                    if (!fromB) return null;
+                    const q = Utils.normalizeQty(parseFloat(transferQty.value) || 0);
+                    const fromBefore = fromB.qtyRemaining;
+                    const fromAfter = Utils.normalizeQty(fromBefore - q);
+                    let toBefore = 0, toLabel = '';
+                    if (transferTo.value === '__NEW__') {
+                        toBefore = 0;
+                        toLabel = `ล็อตใหม่ MFG ${transferNewMfg.value || '-'}${transferNewLotNo.value ? ' (' + transferNewLotNo.value + ')' : ''}`;
+                    } else {
+                        const toB = transferBatches.value.find(b => b.id === transferTo.value);
+                        toBefore = toB ? toB.qtyRemaining : 0;
+                        toLabel = toB ? `MFG ${toB.mfgDate}${toB.lotNo ? ' (' + toB.lotNo + ')' : ''}` : '-';
+                    }
+                    return {
+                        qty: q,
+                        fromLabel: `MFG ${fromB.mfgDate}${fromB.lotNo ? ' (' + fromB.lotNo + ')' : ''}`,
+                        fromBefore,
+                        fromAfter,
+                        toLabel,
+                        toBefore,
+                        toAfter: Utils.normalizeQty(toBefore + q)
+                    };
+                });
+
+                function openTransferModal(itemId, preferredBatchId = '') {
+                    const bs = getBatches(itemId);
+                    if (bs.length === 0) {
+                        toast('⚠️ สินค้านี้ยังไม่มีล็อตคงเหลือให้ย้าย/แยก (กรุณารับเข้าล็อตก่อน)', 'warning');
+                        return;
+                    }
+                    transferItemId.value = itemId;
+                    transferBatches.value = bs.map(b => ({ ...b }));
+                    transferFrom.value = preferredBatchId && bs.some(b => b.id === preferredBatchId) ? preferredBatchId : bs[0].id;
+                    const otherLot = bs.find(b => b.id !== transferFrom.value);
+                    transferTo.value = otherLot ? otherLot.id : '__NEW__';
+                    transferNewMfg.value = Utils.todayStr();
+                    transferNewLotNo.value = '';
+                    transferQty.value = '';
+                    modals.value.transfer = true;
+                }
+
+                function setTransferQuickQty(mode) {
+                    const fromB = transferBatches.value.find(b => b.id === transferFrom.value);
+                    if (!fromB) return;
+                    if (mode === 'all') transferQty.value = String(fromB.qtyRemaining);
+                    else if (mode === 'half') transferQty.value = String(Utils.normalizeQty(fromB.qtyRemaining / 2));
+                    else transferQty.value = String(Math.min(Number(mode), fromB.qtyRemaining));
+                }
+
+                async function executeTransfer() {
+                    const itemId = transferItemId.value;
+                    const fromId = transferFrom.value;
+                    const toSel = transferTo.value;
+                    const isNew = toSel === '__NEW__';
+                    const newMfg = String(transferNewMfg.value || '').trim();
+                    const newLot = String(transferNewLotNo.value || '').trim();
+                    const qty = Utils.normalizeQty(parseFloat(transferQty.value));
+
+                    if (!fromId || !toSel) { toast('กรุณาเลือกล็อตต้นทางและปลายทาง', 'error'); return; }
+                    if (!isNew && fromId === toSel) { toast('ล็อตต้นทางและปลายทางต้องเป็นคนละล็อตกัน', 'error'); return; }
+                    if (isNew && !newMfg) { toast('กรุณาระบุวันผลิต (MFG Date) ของล็อตใหม่', 'error'); return; }
+                    if (!qty || qty <= 0) { toast('กรุณาระบุจำนวนที่ต้องการย้าย/แยก', 'error'); return; }
+
+                    let savedFrom = null, savedTo = null, savedTx1 = null, savedTx2 = null;
+                    try {
+                        await db.transaction('rw', [db.batches, db.transactions], async () => {
+                            const fromBatch = await db.batches.get(fromId);
+                            if (!fromBatch) throw new Error('ไม่พบล็อตต้นทาง');
+                            if (fromBatch.qtyRemaining < qty) throw new Error(`ล็อตต้นทางมีเพียง ${fromBatch.qtyRemaining} ไม่พอย้าย`);
+
+                            let toBatch = null;
+                            if (isNew) {
+                                if (fromBatch.mfgDate === newMfg && (fromBatch.lotNo || '') === newLot) {
+                                    throw new Error('วันผลิตและ Lot No. ตรงกับล็อตต้นทางเดิม กรุณาเปลี่ยนวันผลิตหรือระบุ Lot No. ใหม่');
+                                }
+                                toBatch = await db.batches.where('itemId').equals(itemId)
+                                    .and(b => b.id !== fromId && b.mfgDate === newMfg && (b.lotNo || '') === newLot && b.qtyRemaining > 0.01)
+                                    .first();
+                                if (!toBatch) {
+                                    toBatch = {
+                                        id: Utils.uid(),
+                                        itemId,
+                                        mfgDate: newMfg,
+                                        lotNo: newLot || fromBatch.lotNo || '',
+                                        qtyReceived: qty,
+                                        qtyRemaining: 0,
+                                        createdAt: Date.now()
+                                    };
+                                }
+                            } else {
+                                toBatch = await db.batches.get(toSel);
+                                if (!toBatch) throw new Error('ไม่พบล็อตปลายทาง');
+                            }
+
+                            fromBatch.qtyRemaining = Utils.normalizeQty(fromBatch.qtyRemaining - qty);
+                            toBatch.qtyRemaining = Utils.normalizeQty(toBatch.qtyRemaining + qty);
+                            await db.batches.put(Utils.toPlain(fromBatch));
+                            await db.batches.put(Utils.toPlain(toBatch));
+                            savedFrom = fromBatch;
+                            savedTo = toBatch;
+
+                            const now = Date.now();
+                            const refCode = 'TRF-' + Utils.todayStr().replace(/-/g, '');
+                            savedTx1 = {
+                                id: Utils.uid(),
+                                itemId,
+                                batchId: fromBatch.id,
+                                type: 'adjust',
+                                qty: -qty,
+                                ref: refCode,
+                                note: `ย้าย/แยกล็อตออกไป MFG ${toBatch.mfgDate}${toBatch.lotNo ? ' (' + toBatch.lotNo + ')' : ''}`,
+                                ts: now,
+                                status: 'active',
+                                mfgDate: fromBatch.mfgDate
+                            };
+                            savedTx2 = {
+                                id: Utils.uid(),
+                                itemId,
+                                batchId: toBatch.id,
+                                type: 'adjust',
+                                qty: qty,
+                                ref: refCode,
+                                note: `รับโอนจากล็อต MFG ${fromBatch.mfgDate}${fromBatch.lotNo ? ' (' + fromBatch.lotNo + ')' : ''}`,
+                                ts: now + 1,
+                                status: 'active',
+                                mfgDate: toBatch.mfgDate
+                            };
+                            await db.transactions.add(Utils.toPlain(savedTx1));
+                            await db.transactions.add(Utils.toPlain(savedTx2));
+                        });
+
+                        if (savedFrom) await pushRecordToCloud('batches', savedFrom);
+                        if (savedTo) await pushRecordToCloud('batches', savedTo);
+                        if (savedTx1) await pushRecordToCloud('transactions', savedTx1);
+                        if (savedTx2) await pushRecordToCloud('transactions', savedTx2);
+                        broadcastChannel.postMessage({ type: 'DATA_CHANGED' });
+                        modals.value.transfer = false;
+                        toast(`✅ ย้าย/แยกล็อตจำนวน ${Utils.fmtNum(qty)} สำเร็จเรียบร้อย`, 'success');
+                        await loadAll();
+                        if (modals.value.detail && detailItem.value?.id === itemId) {
+                            await openDetail(itemId);
+                        }
+                    } catch (e) {
+                        toast('❌ ' + e.message, 'error');
+                    }
+                }
+
+                async function syncItem(itemId) {
+                    const bal = getBalance(itemId);
+                    const bs = getBatches(itemId);
+                    const sumBatches = Utils.normalizeQty(bs.reduce((s, b) => s + b.qtyRemaining, 0));
+                    const diff = Utils.normalizeQty(sumBatches - bal);
+                    if (Math.abs(diff) < 0.01) {
+                        toast('✅ ยอดรวมล็อตตรงกับยอดคงเหลือสุทธิแล้ว (' + Utils.fmtNum(bal) + ')', 'success');
+                        return;
+                    }
+                    let targetBatch = bs[0];
+                    if (!targetBatch) {
+                        targetBatch = { id: Utils.uid(), itemId, mfgDate: Utils.todayStr(), lotNo: 'SYNC', qtyReceived: Math.max(0, bal), qtyRemaining: Math.max(0, bal), createdAt: Date.now() };
+                        await db.batches.put(Utils.toPlain(targetBatch));
+                        await pushRecordToCloud('batches', targetBatch);
+                    } else {
+                        targetBatch.qtyRemaining = Utils.normalizeQty(Math.max(0, targetBatch.qtyRemaining - diff));
+                        await db.batches.put(Utils.toPlain(targetBatch));
+                        await pushRecordToCloud('batches', targetBatch);
+                    }
+                    toast(`🔄 กระทบยอดล็อตให้ตรงกับธุรกรรม (${Utils.fmtNum(bal)}) เรียบร้อย`, 'success');
+                    await loadAll();
+                    if (modals.value.detail) await openDetail(itemId);
+                }
+
+                async function reverseLastTransaction(itemId) {
+                    const itemTxs = transactions.value.filter(t => t.itemId === itemId && t.status !== 'cancelled').sort((a, b) => b.ts - a.ts);
+                    if (itemTxs.length === 0) { toast('ไม่มีรายการให้ยกเลิก', 'warning'); return; }
+                    const last = itemTxs[0];
+                    if (last.type === 'out' && last.ref && (last.ref.startsWith('JOB-') || last.ref.startsWith('PJ-'))) {
+                        toast('⚠️ รายการนี้เป็นการตัดจ่ายตามใบงาน กรุณากดปุ่ม "ดึงคืนสต็อก (Reverse)" ที่หน้าใบงาน', 'warning');
+                        return;
+                    }
+                    const b = await db.batches.get(last.batchId);
+                    if (b) {
+                        const nextRem = Utils.normalizeQty(b.qtyRemaining - last.qty);
+                        if (nextRem < 0) { toast('⚠️ ยอดในล็อตไม่พอให้ดึงคืน', 'error'); return; }
+                        b.qtyRemaining = nextRem;
+                        await db.batches.put(Utils.toPlain(b));
+                        await pushRecordToCloud('batches', b);
+                    }
+                    last.status = 'cancelled';
+                    await db.transactions.put(Utils.toPlain(last));
+                    await pushRecordToCloud('transactions', last);
+                    toast('↩️ ยกเลิกรายการล่าสุดและคืนยอดสต็อกเรียบร้อย', 'success');
+                    await loadAll();
+                    if (modals.value.detail) await openDetail(itemId);
+                }
+
+                // ===== MODALS & NAVIGATION =====
+                async function openDetail(itemId) {
+                    const it = await db.items.get(itemId);
+                    if (!it) return;
+                    detailItem.value = it;
+                    detailBalance.value = getBalance(itemId);
+                    detailBatches.value = getBatches(itemId);
+                    modals.value.detail = true;
+                }
+
+                function openModal(name, payload) {
+                    if (name === 'product') {
+                        const it = payload ? items.value.find(i => i.id === payload) : null;
+                        modalProduct.value = it ? { ...it, minStock: it.minStock ?? 10 } : { id: '', code: '', type: 'เคมีภัณฑ์', chemType: '', location: 'WH1', minStock: 10, unitLabel: 'ถัง', shelfLifeMonths: 6, tankColor: '', netWeight: '', foilName: '', width: '', length: '', note: '' };
+                    } else if (name === 'transaction') {
+                        modalTx.value = { itemId: payload || '', type: 'in', qty: '', batchId: '', mfgDate: Utils.todayStr(), lotNo: '', ref: '', note: '' };
+                    } else if (name === 'job') {
+                        const j = payload ? jobs.value.find(x => x.id === payload) : null;
+                        modalJob.value = j ? { id: j.id, customerId: j.customerId, items: j.items.map(x => ({ _rid: Utils.uid(), ...x })), note: j.note || '' } : { id: '', customerId: '', items: [{ _rid: Utils.uid(), itemId: '', qty: '' }], note: '' };
+                        customerSearchText.value = j ? (j.customerName || j.customer || '') : '';
+                    } else if (name === 'customer') {
+                        const c = payload ? customers.value.find(x => x.id === payload) : null;
+                        modalCustomer.value = c ? { ...c } : { id: '', name: '', phone: '', address: '' };
+                    }
+                    modals.value[name] = true;
+                }
+
+                function closeModal(name) { modals.value[name] = false; }
+                function addJobItemRow() { modalJob.value.items.push({ _rid: Utils.uid(), itemId: '', qty: '' }); }
+
+                function goToTab(idx) {
+                    currentTab.value = idx;
+                    sidebarOpen.value = false;
+                    if (idx === 0) setTimeout(() => { renderChart(); renderDonut(); }, 80);
+                }
+
+                function goToStockWithFilter(status) {
+                    stockStatusFilter.value = status;
+                    goToTab(1);
+                }
+
+                function goToHistoryWithType(type) {
+                    historyFilter.value = { search: '', customerOrRef: '', type, batchId: '', from: '', to: '' };
+                    goToTab(4);
+                }
+
+                function globalSearchEnter() {
+                    const q = globalSearch.value.trim();
+                    if (!q) return;
+                    const foundItem = activeItems.value.find(i => i.code.toLowerCase().includes(q.toLowerCase()));
+                    if (foundItem) {
+                        openDetail(foundItem.id);
+                    } else {
+                        historyFilter.value = { search: '', customerOrRef: q, type: '', batchId: '', from: '', to: '' };
+                        goToTab(4);
+                    }
+                    globalSearch.value = '';
+                }
+
+                // QR Scanner
+                let qrScanner = null;
+                function openScanner() {
+                    modals.value.scanner = true;
+                    setTimeout(() => {
+                        if (typeof Html5Qrcode === 'undefined') return;
+                        qrScanner = new Html5Qrcode('scanner-container');
+                        qrScanner.start({ facingMode: 'environment' }, { fps: 10, qrbox: 200 }, (decoded) => {
+                            toast(`📷 สแกนพบ: ${decoded}`, 'success');
+                            stopScanner();
+                            globalSearch.value = decoded;
+                            globalSearchEnter();
+                        }, () => {}).catch(() => toast('ไม่สามารถเปิดกล้องได้ในโหมดตัวอย่าง', 'warning'));
+                    }, 200);
+                }
+                function stopScanner() {
+                    if (qrScanner) { try { qrScanner.stop(); } catch (e) {} qrScanner = null; }
+                    modals.value.scanner = false;
+                }
+
+                let toastTimer = null;
+                function toast(msg, type = 'success') {
+                    const el = document.getElementById('toast');
+                    if (!el) return;
+                    el.textContent = msg;
+                    el.className = 'toast-container show ' + type;
+                    clearTimeout(toastTimer);
+                    toastTimer = setTimeout(() => { el.className = 'toast-container'; }, 3200);
+                }
+
+                onMounted(async () => {
+                    try {
+                        themeMode.value = localStorage.getItem('spp_theme_mode') || 'light';
+                        accentTheme.value = localStorage.getItem('spp_theme_accent') || 'teal';
+                        document.documentElement.classList.toggle('dark', themeMode.value === 'dark');
+                        document.documentElement.setAttribute('data-accent', accentTheme.value);
+                    } catch (e) {}
+                    await seedDefaultData();
+                    await loadAll();
+                    initSupabaseClient();
+                    broadcastChannel.onmessage = (ev) => { if (ev.data?.type === 'DATA_CHANGED') loadAll(); };
+                });
+
+                return {
+                    currentTab, tabs, items, activeItems, batches, transactions, jobs, customers, backups,
+                    sidebarOpen, fabOpen, themeMode, accentTheme, accentOptions, toggleTheme, setAccent,
+                    globalSearch, globalSearchEnter,
+                    stockSearch, stockTypeFilter, stockStatusFilter, filteredStockItems, stockStats, expiryAlerts,
+                    jobFilter, jobSearch, jobCounts, filteredJobs,
+                    customerSearch, customerSearchText, filteredCustomers, filteredCustomersList,
+                    analyticsPeriodLabel, analytics, loadAnalytics, topProducts,
+                    historyPeriod, historyFilter, filteredHistoryView, historySummary, recentTransactions,
+                    resetHistoryFilters, exportHistory, getBatchLabel,
+                    traceProductHistory, traceBatchHistory, traceCustomerHistory,
+                    inspectJob, inspectReference, inspectedJob, inspectedJobTxs,
+                    modals, modalProduct, modalTx, modalJob, modalCustomer, detailItem, detailBalance, detailBatches,
+                    transferItemId, transferBatches, transferFrom, transferTo, transferNewMfg, transferNewLotNo, transferQty, transferPreview,
+                    openTransferModal, setTransferQuickQty, executeTransfer, syncItem, reverseLastTransaction,
+                    openModal, closeModal, openDetail, addJobItemRow, goToTab, goToStockWithFilter, goToHistoryWithType,
+                    saveProduct, deleteProduct, saveTransaction, previewBalance,
+                    saveJob, shipJob, reverseShipmentPrompt, cancelJob, saveCustomer, deleteCustomer,
+                    createBackup, triggerRestore, restoreBackup, stockFileData, onStockFileChange, importStockCount,
+                    openScanner, stopScanner,
+                    cloudState, cloudForm, cloudStatusText, saveCloudConfig, disconnectCloud, pushAllToCloud, pullAllFromCloud, copySupabaseSql,
+                    getBalance, getBatches, getItemObj, getItemCode, itemDisplayName, itemLocationOrSize,
+                    formatNum: Utils.fmtNum, formatDateTime: Utils.fmtDateTime, formatTime: Utils.fmtTime
+                };
+            }
+        }).mount('#app');
+    </script>
+</body>
+</html>
