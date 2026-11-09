@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Stock Job Pro — V7.0 Cloud & Traceability</title>
+    <title>Stock Job Pro — V7.4 Cloud Sync & PIN Security</title>
 
     <!-- GOOGLE FONTS -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -244,6 +244,26 @@
         .summary-grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin-bottom: 16px; }
         @media (max-width: 900px) { .summary-grid-3 { grid-template-columns: 1fr; } .transfer-visual-grid { grid-template-columns: 1fr; } }
 
+        /* Customer Autocomplete Dropdown in Job Modal */
+        .cust-autocomplete-wrap { position: relative; }
+        .cust-suggestions { position: absolute; left: 0; right: 0; top: calc(100% + 4px); z-index: 150; background: var(--bg-surface); border: 1px solid var(--primary); border-radius: var(--radius-md); box-shadow: var(--shadow-lg); max-height: 230px; overflow-y: auto; }
+        .cust-suggestion-item { padding: 10px 14px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 8px; border-bottom: 1px solid var(--border-color); font-size: 13.5px; transition: background 0.15s ease; }
+        .cust-suggestion-item:last-child { border-bottom: none; }
+        .cust-suggestion-item:hover, .cust-suggestion-item.active { background: var(--primary-100); color: var(--primary-700); }
+        .cust-suggestion-new { padding: 10px 14px; cursor: pointer; background: var(--bg-body); color: var(--primary); font-weight: 600; font-size: 13px; display: flex; align-items: center; gap: 6px; border-top: 1px dashed var(--border-color); }
+        .cust-suggestion-new:hover { background: var(--primary-100); }
+
+        /* PIN Lock Screen Overlay */
+        .pin-lock-overlay { position: fixed; inset: 0; z-index: 500; background: linear-gradient(135deg, #0f172a 0%, #134e4a 100%); display: flex; align-items: center; justify-content: center; padding: 16px; color: #f8fafc; }
+        .pin-lock-card { background: rgba(15, 23, 42, 0.88); backdrop-filter: blur(16px); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 24px; padding: 28px 24px; width: 100%; max-width: 370px; text-align: center; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.45); }
+        .pin-dots { display: flex; justify-content: center; gap: 12px; margin: 18px 0; }
+        .pin-dot { width: 16px; height: 16px; border-radius: 50%; border: 2px solid #2dd4bf; background: transparent; transition: all 0.15s ease; }
+        .pin-dot.filled { background: #2dd4bf; transform: scale(1.15); box-shadow: 0 0 10px rgba(45, 212, 191, 0.6); }
+        .pin-keypad { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-top: 14px; }
+        .pin-key { height: 54px; border-radius: 14px; border: 1px solid rgba(255, 255, 255, 0.12); background: rgba(255, 255, 255, 0.06); color: #ffffff; font-size: 20px; font-weight: 600; font-family: var(--font-mono); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.15s ease; user-select: none; }
+        .pin-key:hover { background: rgba(45, 212, 191, 0.2); border-color: #2dd4bf; }
+        .pin-key:active { transform: scale(0.95); }
+
         /* Jobs */
         .job-card { background: var(--bg-surface); border-radius: var(--radius-md); padding: 14px 18px; border: 1px solid var(--border-color); border-left-width: 4px; box-shadow: var(--shadow-sm); margin-bottom: 12px; }
         .job-card .job-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
@@ -347,6 +367,41 @@
     <div id="toast" class="toast-container"></div>
 
     <div id="app" class="app-layout" v-cloak>
+        <!-- PIN LOCK SCREEN OVERLAY (แบบ B: ใส่ PIN เพื่อถอดรหัสคีย์และเข้าใช้งานทันที) -->
+        <div v-if="pinSecurity.isLocked" class="pin-lock-overlay">
+            <div class="pin-lock-card">
+                <div style="font-size: 36px; color: #2dd4bf; margin-bottom: 6px;"><i class="fas fa-shield-alt"></i></div>
+                <div style="font-size: 19px; font-weight: 700;">Stock Job Pro <span style="font-size:12px;background:rgba(45,212,191,0.2);color:#2dd4bf;padding:2px 8px;border-radius:20px;">v{{ appVersion }}</span></div>
+                <div style="font-size: 12.5px; color: #94a3b8; margin-top: 4px;">
+                    {{ pinSecurity.hasEncryptedBundle ? '🔐 กรุณาใส่รหัส PIN เพื่อถอดรหัส Cloud และเข้าใช้งาน' : '🔐 กรุณาใส่รหัส PIN เพื่อปลดล็อกหน้าจอ' }}
+                </div>
+
+                <div class="pin-dots">
+                    <span v-for="n in pinSecurity.pinLength" :key="n" class="pin-dot" :class="{ filled: pinSecurity.inputPin.length >= n }"></span>
+                </div>
+
+                <div v-if="pinSecurity.errorMsg" style="color: #f87171; font-size: 12.5px; font-weight: 600; margin-bottom: 8px;">
+                    {{ pinSecurity.errorMsg }}
+                </div>
+
+                <label style="display:inline-flex;align-items:center;gap:6px;font-size:12px;color:#cbd5e1;cursor:pointer;margin-bottom:4px;">
+                    <input type="checkbox" v-model="pinSecurity.rememberDevice" />
+                    จดจำการปลดล็อกในอุปกรณ์นี้
+                </label>
+
+                <div class="pin-keypad">
+                    <button v-for="digit in ['1','2','3','4','5','6','7','8','9']" :key="digit" type="button" class="pin-key" @click="pressPinKey(digit)">{{ digit }}</button>
+                    <button type="button" class="pin-key" style="font-size:13px;color:#94a3b8;" @click="pinSecurity.inputPin = ''; pinSecurity.errorMsg = ''">ล้าง</button>
+                    <button type="button" class="pin-key" @click="pressPinKey('0')">0</button>
+                    <button type="button" class="pin-key" style="font-size:16px;color:#f87171;" @click="pressPinBackspace"><i class="fas fa-backspace"></i></button>
+                </div>
+
+                <button type="button" class="btn-primary w-full justify-center mt-3" style="height:42px;font-size:14px;" @click="unlockWithPin">
+                    <i class="fas fa-unlock-alt"></i> ปลดล็อกเข้าใช้งาน
+                </button>
+            </div>
+        </div>
+
         <div class="sidebar-overlay" :class="{ open: sidebarOpen }" @click="sidebarOpen = false"></div>
 
         <!-- SIDEBAR -->
@@ -354,7 +409,7 @@
             <div class="sidebar-brand">
                 <i class="fas fa-cubes"></i>
                 <span>Stock</span> Pro
-                <small>v7.0 Cloud</small>
+                <small>v{{ appVersion }}</small>
             </div>
             <nav class="sidebar-nav">
                 <button v-for="(tab, idx) in tabs" :key="idx" class="nav-item" :class="{ active: currentTab === idx }" @click="goToTab(idx)">
@@ -384,13 +439,17 @@
                 <div class="topbar-left">
                     <button class="hamburger" @click="sidebarOpen = !sidebarOpen"><i class="fas fa-bars"></i></button>
                     <span class="page-title">{{ tabs[currentTab]?.label }}</span>
+                    <span class="font-mono text-xs font-semibold px-2 py-1 rounded-full" style="background:var(--primary-100);color:var(--primary-700);">v{{ appVersion }}</span>
                 </div>
                 <div class="topbar-right">
                     <!-- Cloud Auto-Sync Status Pill -->
-                    <button class="sync-pill" @click="openModal('cloudSync')" title="คลิกเพื่อตั้งค่าการซิงค์ข้อมูลอัตโนมัติผ่าน Supabase (ฟรี)">
+                    <button class="sync-pill" @click="openModal('cloudSync')" title="คลิกเพื่อตรวจสอบและตั้งค่าการซิงค์ข้อมูล Supabase">
                         <span class="sync-dot" :class="cloudState.status"></span>
                         <span>{{ cloudStatusText }}</span>
                         <span v-if="cloudState.lastSyncTs" class="text-xs text-muted">({{ formatTime(cloudState.lastSyncTs) }})</span>
+                    </button>
+                    <button v-if="cloudState.enabled" class="btn-secondary btn-sm" @click="syncNowBothWays" title="ดึงและส่งข้อมูลล่าสุดกับ Cloud ทันที">
+                        <i class="fas fa-sync-alt"></i> ซิงค์ตอนนี้
                     </button>
 
                     <div class="search-box">
@@ -401,6 +460,14 @@
                         <i class="fas fa-plus"></i> ใบงานเบิก/จ่าย
                     </button>
                 </div>
+            </div>
+
+            <!-- แถบแจ้งเตือนกรณีตั้งค่า Supabase แล้วแต่ยังไม่ได้รัน SQL หรือคีย์ผิด -->
+            <div v-if="cloudState.lastError" class="alert-box danger mb-3">
+                <div>
+                    <strong>❌ ซิงค์ฐานข้อมูล Supabase ไม่สำเร็จ:</strong> {{ cloudState.lastError }}
+                </div>
+                <button class="btn-primary btn-sm" @click="openModal('cloudSync')"><i class="fas fa-tools"></i> เปิดหน้าแก้ไข & คัดลอก SQL</button>
             </div>
 
             <!-- ===== PAGE 0: DASHBOARD ===== -->
@@ -820,6 +887,18 @@
                         <button class="btn-secondary btn-sm" @click="openModal('importStock')"><i class="fas fa-file-import"></i> นำเข้า Excel</button>
                     </div>
                 </div>
+
+                <div class="settings-section">
+                    <div class="settings-section-title">ℹ️ ข้อมูลเวอร์ชันระบบ (System Version)</div>
+                    <div class="settings-row">
+                        <span>เวอร์ชันปัจจุบัน</span>
+                        <span class="font-mono font-bold text-primary">Stock Job Pro v{{ appVersion }}</span>
+                    </div>
+                    <div class="settings-row">
+                        <span>รายการอัปเดตล่าสุดในเวอร์ชันนี้</span>
+                        <span class="text-xs text-secondary">ระบบแนะนำชื่อลูกค้าอัตโนมัติ (Autocomplete) + ย้าย/แยกล็อตปนกัน + ซิงค์ Cloud</span>
+                    </div>
+                </div>
             </div>
         </main>
 
@@ -843,42 +922,66 @@
         <!-- MODALS                                                        -->
         <!-- ============================================================== -->
 
-        <!-- 1. SUPABASE CLOUD SYNC MODAL -->
+        <!-- 1. SUPABASE CLOUD SYNC & PIN ENCRYPTION MODAL -->
         <div v-if="modals.cloudSync" class="modal-overlay" @click.self="closeModal('cloudSync')">
             <div class="modal-box">
                 <div class="modal-header">
-                    <span class="title">☁️ ตั้งค่าซิงค์ข้อมูลอัตโนมัติฟรี (Supabase Cloud Sync)</span>
+                    <span class="title">☁️ ตั้งค่า Cloud Sync & เข้ารหัสคีย์ด้วย PIN (แบบ B)</span>
                     <button class="close-btn" @click="closeModal('cloudSync')">&times;</button>
                 </div>
                 <div class="modal-body">
                     <div class="alert-box info mb-3">
                         <div>
-                            <strong>ทำไมต้องใช้ Hybrid Local + Supabase?</strong><br>
-                            ข้อมูลจะถูกบันทึกในเครื่องทันที (รวดเร็ว ใช้งานแม้เน็ตหลุด) และซิงค์ขึ้น Cloud อัตโนมัติเพื่อให้เปิดดูจากมือถือหรือคอมเครื่องอื่นได้แบบ Realtime ฟรี 100%
+                            <strong>🔐 ระบบเข้ารหัสคีย์ด้วยรหัส PIN (แบบ B — เปิดเว็บปุ๊บใส่แค่ PIN ใช้ได้ทุกเครื่อง):</strong><br>
+                            เมื่อกรอก URL + Key และตั้งรหัส PIN ด้านล่าง ระบบจะเข้ารหัสคีย์ด้วยมาตรฐาน <strong>AES-256-GCM</strong> ผูกไว้กับรหัส PIN ของคุณ คนนอกที่เปิดดูโค้ดจะไม่เห็นคีย์จริง และเวลาคุณเปิดเว็บจากมือถือหรือคอมเครื่องใหม่ แค่กดรหัส PIN ระบบจะถอดรหัสและซิงค์ Cloud ให้อัตโนมัติทันที!
                         </div>
                     </div>
 
                     <div class="form-group">
                         <label>1. ขั้นตอนเตรียมตารางใน Supabase (ทำครั้งเดียว)</label>
-                        <div class="text-xs text-secondary mb-2">
-                            สมัครฟรีที่ <strong>supabase.com</strong> → สร้างโปรเจกต์ใหม่ → ไปที่เมนู <strong>SQL Editor</strong> แล้วกดปุ่มด้านล่างเพื่อคัดลอกคำสั่ง SQL ไปวางแล้วกด Run
-                        </div>
                         <button class="btn-secondary btn-sm" @click="copySupabaseSql"><i class="fas fa-copy"></i> คัดลอกคำสั่ง SQL สำหรับสร้างตารางอัตโนมัติ</button>
                     </div>
 
-                    <div class="form-group">
-                        <label>2. Supabase Project URL</label>
-                        <input v-model="cloudForm.url" placeholder="วาง Project URL จากหน้า Project Settings > API" />
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>2. Supabase Project URL</label>
+                            <input v-model="cloudForm.url" placeholder="วาง Project URL จากหน้า Connect / API" />
+                        </div>
+                        <div class="form-group">
+                            <label>3. Supabase Anon / Publishable Key</label>
+                            <input v-model="cloudForm.anonKey" type="password" placeholder="วางคีย์ sb_publishable_... หรือ eyJ..." />
+                        </div>
                     </div>
-                    <div class="form-group">
-                        <label>3. Supabase Anon Key (Public)</label>
-                        <input v-model="cloudForm.anonKey" type="password" placeholder="eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..." />
+
+                    <div class="bg-body p-3 rounded border mb-3">
+                        <div class="font-bold text-sm text-primary mb-1"><i class="fas fa-key"></i> 4. ตั้งรหัส PIN (4-6 หลัก) สำหรับล็อกหน้าจอและฝังคีย์เข้ารหัส</div>
+                        <div class="text-xs text-secondary mb-2">
+                            ตั้งตัวเลข PIN 4-6 หลักที่คุณจำง่าย แล้วกดปุ่ม <strong>"ดาวน์โหลดไฟล์ index.html ที่ฝังคีย์เข้ารหัสแล้ว"</strong> เพื่อนำไปอัปโหลดขึ้น GitHub แทนไฟล์เดิม
+                        </div>
+                        <div class="form-row items-center">
+                            <div class="form-group" style="margin-bottom:0;">
+                                <label>รหัส PIN ตัวเลข 4-6 หลัก</label>
+                                <input v-model="pinSetupForm.pin" type="password" inputmode="numeric" maxlength="6" placeholder="เช่น 1234 หรือ 2569" />
+                            </div>
+                            <div class="flex flex-wrap gap-2" style="margin-top:18px;">
+                                <button type="button" class="btn-primary btn-sm" @click="generateAndDownloadEncryptedHtml">
+                                    <i class="fas fa-file-download"></i> ดาวน์โหลด index.html (ฝังคีย์เข้ารหัส PIN)
+                                </button>
+                                <button type="button" class="btn-secondary btn-sm" @click="generateAndCopyEncryptedHtml">
+                                    <i class="fas fa-copy"></i> คัดลอกโค้ดไฟล์ที่ฝังคีย์แล้ว
+                                </button>
+                            </div>
+                        </div>
+                        <div v-if="pinSecurity.hasEncryptedBundle" class="text-xs mt-2" style="color:var(--success);font-weight:600;">
+                            ✅ มีชุดคีย์เข้ารหัส PIN อยู่ในระบบแล้ว (สามารถกดปุ่ม "🔒 ทดสอบล็อกหน้าจอ" ด้านล่างเพื่อทดสอบใส่ PIN ได้เลย)
+                        </div>
                     </div>
 
                     <div class="flex flex-wrap justify-between items-center gap-2 mt-4 pt-3 border-t" style="border-color:var(--border-color);">
-                        <div class="flex gap-2">
-                            <button v-if="cloudState.enabled" class="btn-secondary btn-sm" @click="pushAllToCloud"><i class="fas fa-cloud-upload-alt"></i> ส่งข้อมูลขึ้น Cloud ทันที</button>
-                            <button v-if="cloudState.enabled" class="btn-secondary btn-sm" @click="pullAllFromCloud"><i class="fas fa-cloud-download-alt"></i> ดึงข้อมูลจาก Cloud</button>
+                        <div class="flex flex-wrap gap-2">
+                            <button v-if="cloudState.enabled" class="btn-secondary btn-sm" @click="pushAllToCloud"><i class="fas fa-cloud-upload-alt"></i> ส่งขึ้น Cloud</button>
+                            <button v-if="cloudState.enabled" class="btn-secondary btn-sm" @click="pullAllFromCloud"><i class="fas fa-cloud-download-alt"></i> ดึงจาก Cloud</button>
+                            <button v-if="pinSecurity.hasEncryptedBundle || pinSetupForm.pin" class="btn-secondary btn-sm" @click="lockAppNow"><i class="fas fa-lock"></i> ล็อกหน้าจอทันที</button>
                             <button v-if="cloudState.enabled" class="btn-danger btn-sm" @click="disconnectCloud">ตัดการเชื่อมต่อ</button>
                         </div>
                         <div class="flex gap-2">
@@ -997,23 +1100,65 @@
                     <button class="close-btn" @click="closeModal('job')">&times;</button>
                 </div>
                 <div class="modal-body">
-                    <div class="form-group">
-                        <label>ลูกค้า * (พิมพ์ชื่อลูกค้าใหม่หรือเลือกจากรายชื่อ)</label>
-                        <input list="customer-datalist" v-model="customerSearchText" placeholder="พิมพ์ชื่อลูกค้า..." />
-                        <datalist id="customer-datalist">
-                            <option v-for="c in filteredCustomers" :key="c.id" :value="c.name"></option>
-                        </datalist>
+                    <div class="form-group cust-autocomplete-wrap">
+                        <label>ลูกค้า * <span class="text-xs text-muted font-normal">(พิมพ์เพื่อค้นหา แตะชื่อที่เด้งขึ้นมา หรือกด Enter เพื่อเพิ่มใหม่)</span></label>
+                        <div class="flex gap-2">
+                            <div class="flex-1" style="position:relative;">
+                                <input
+                                    type="text"
+                                    v-model="customerSearchText"
+                                    @focus="onCustomerInputFocus"
+                                    @input="onCustomerSearchInput"
+                                    @keydown.down.prevent="moveCustomerSuggestion(1)"
+                                    @keydown.up.prevent="moveCustomerSuggestion(-1)"
+                                    @keydown.enter.prevent="selectOrCreateCustomer"
+                                    @blur="hideCustomerSuggestionsDelayed"
+                                    placeholder="พิมพ์ชื่อลูกค้า หรือแตะเพื่อเลือกรายชื่อ..."
+                                    autocomplete="off"
+                                />
+                            </div>
+                            <button type="button" class="btn-secondary" style="flex-shrink:0;" title="เพิ่มลูกค้าใหม่ (กรอกเบอร์/ที่อยู่)" @click="openModal('customer')">
+                                <i class="fas fa-user-plus"></i>
+                            </button>
+                        </div>
+
+                        <!-- Custom Autocomplete Suggestions Dropdown -->
+                        <div v-if="showCustomerSuggestions && (filteredCustomerOptions.length > 0 || customerSearchText.trim())" class="cust-suggestions">
+                            <div
+                                v-for="(c, cIdx) in filteredCustomerOptions"
+                                :key="c.id || c.name"
+                                class="cust-suggestion-item"
+                                :class="{ active: cIdx === customerSuggestionIndex }"
+                                @mousedown.prevent="selectCustomerFromSuggestion(c)"
+                                @touchstart.passive="customerSuggestionIndex = cIdx"
+                            >
+                                <div>
+                                    <span class="font-semibold">{{ c.name }}</span>
+                                    <span v-if="c.address" class="text-xs text-muted ml-1">({{ c.address.slice(0, 25) }})</span>
+                                </div>
+                                <span class="text-xs text-muted font-mono">{{ c.phone || 'แตะเลือก →' }}</span>
+                            </div>
+                            <div
+                                v-if="customerSearchText.trim() && !exactCustomerMatch"
+                                class="cust-suggestion-new"
+                                @mousedown.prevent="selectOrCreateCustomer"
+                            >
+                                <i class="fas fa-plus-circle"></i>
+                                <span>แตะที่นี่ หรือกด Enter เพื่อเพิ่ม "<strong>{{ customerSearchText.trim() }}</strong>" เป็นลูกค้าใหม่</span>
+                            </div>
+                        </div>
                     </div>
+
                     <div class="form-group">
                         <label>รายการสินค้าที่เบิกจ่าย</label>
                         <div v-for="(it, idx) in modalJob.items" :key="it._rid" class="flex items-center gap-2 mb-2">
-                            <select v-model="it.itemId" style="flex:1;">
+                            <select v-model="it.itemId" style="flex:1;min-width:0;">
                                 <option value="">-- เลือกสินค้า --</option>
                                 <option v-for="item in activeItems" :key="item.id" :value="item.id">
-                                    {{ item.code }} — เหลือ {{ formatNum(getBalance(item.id)) }} {{ item.unitLabel }}
+                                    {{ jobItemOptionLabel(item) }} — เหลือ {{ formatNum(getBalance(item.id)) }} {{ item.unitLabel }}
                                 </option>
                             </select>
-                            <input v-model="it.qty" type="number" step="0.1" placeholder="จำนวน" style="width:95px;text-align:center;" />
+                            <input v-model="it.qty" type="number" step="0.1" inputmode="decimal" placeholder="จำนวน" style="width:90px;flex:0 0 90px;text-align:center;" />
                             <button class="btn-danger btn-sm" @click="modalJob.items.splice(idx, 1)">✕</button>
                         </div>
                         <button class="btn-secondary btn-sm" @click="addJobItemRow"><i class="fas fa-plus"></i> เพิ่มรายการสินค้า</button>
@@ -1280,7 +1425,70 @@
 
     <script>
         const DEFAULT_SHELF_LIFE = 6;
-        const APP_VERSION = '7.0.0';
+        const APP_VERSION = '7.4';
+        // เก็บโครงสร้าง HTML ต้นฉบับก่อนที่ Vue จะแปลง DOM เพื่อให้ปุ่มดาวน์โหลดไฟล์ที่ฝังคีย์ PIN ทำงานได้สมบูรณ์ 100%
+        const RAW_TEMPLATE_HTML = '<!DOCTYPE html>\n' + document.documentElement.outerHTML;
+        // ชุดคีย์เข้ารหัส AES-256-GCM ที่ฝังมากับไฟล์
+        const EMBEDDED_ENCRYPTED_BUNDLE = "";
+
+        // ฟังก์ชันทำความสะอาด URL และ Key กรณีผู้ใช้ก๊อปปี้ติดคำว่า NEXT_PUBLIC_SUPABASE_URL= มาด้วย
+        function cleanSupabaseUrl(raw) {
+            if (!raw) return '';
+            let s = String(raw).trim();
+            if (s.includes('SUPABASE_URL=')) s = s.split('SUPABASE_URL=').pop().trim();
+            s = s.split(/[\r\n\s"']+/)[0].replace(/\/+$/, '');
+            if (s && !s.startsWith('http')) s = 'https://' + s;
+            return s;
+        }
+        function cleanSupabaseKey(raw) {
+            if (!raw) return '';
+            let s = String(raw).trim();
+            if (s.includes('KEY=')) s = s.split('KEY=').pop().trim();
+            s = s.split(/[\r\n\s"']+/)[0];
+            return s;
+        }
+
+        // ================================================================
+        //  MODULAR CRYPTO & PIN SECURITY ENGINE (AES-256-GCM + PBKDF2)
+        // ================================================================
+        const CryptoPinService = {
+            bufToB64: (buf) => btoa(String.fromCharCode(...new Uint8Array(buf))),
+            b64ToBuf: (b64) => Uint8Array.from(atob(b64), c => c.charCodeAt(0)),
+            async deriveKey(pin, saltU8) {
+                const enc = new TextEncoder();
+                const baseKey = await crypto.subtle.importKey('raw', enc.encode(String(pin).trim()), 'PBKDF2', false, ['deriveKey']);
+                return crypto.subtle.deriveKey(
+                    { name: 'PBKDF2', salt: saltU8, iterations: 100000, hash: 'SHA-256' },
+                    baseKey,
+                    { name: 'AES-GCM', length: 256 },
+                    false,
+                    ['encrypt', 'decrypt']
+                );
+            },
+            async encryptBundle(pin, payloadObj) {
+                const salt = crypto.getRandomValues(new Uint8Array(16));
+                const iv = crypto.getRandomValues(new Uint8Array(12));
+                const key = await this.deriveKey(pin, salt);
+                const encoded = new TextEncoder().encode(JSON.stringify(payloadObj));
+                const cipherBuf = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, encoded);
+                return JSON.stringify({
+                    v: 1,
+                    len: String(pin).trim().length,
+                    s: this.bufToB64(salt),
+                    i: this.bufToB64(iv),
+                    c: this.bufToB64(cipherBuf)
+                });
+            },
+            async decryptBundle(pin, bundleJsonStr) {
+                const parsed = JSON.parse(bundleJsonStr);
+                const salt = this.b64ToBuf(parsed.s);
+                const iv = this.b64ToBuf(parsed.i);
+                const cipher = this.b64ToBuf(parsed.c);
+                const key = await this.deriveKey(pin, salt);
+                const plainBuf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, cipher);
+                return JSON.parse(new TextDecoder().decode(plainBuf));
+            }
+        };
 
         // ================================================================
         //  DEXIE LOCAL DATABASE (v6 adds docNo & minStock & balanceBefore/After)
@@ -1368,6 +1576,99 @@
                 const jobSearch = ref('');
                 const customerSearch = ref('');
                 const customerSearchText = ref('');
+                const showCustomerSuggestions = ref(false);
+                const customerSuggestionIndex = ref(-1);
+
+                // รวมรายชื่อลูกค้าจากตาราง customers และจากประวัติใบงานเก่า (กรณีเคยพิมพ์ชื่อไว้ในใบงาน)
+                const allKnownCustomers = computed(() => {
+                    const map = new Map();
+                    customers.value.forEach(c => {
+                        if (!c.deletedAt && c.name) {
+                            map.set(c.name.trim().toLowerCase(), c);
+                        }
+                    });
+                    jobs.value.forEach(j => {
+                        if (j.deletedAt) return;
+                        const jName = (j.customerName || j.customer || '').trim();
+                        if (jName && jName !== 'ไม่ระบุ' && !map.has(jName.toLowerCase())) {
+                            map.set(jName.toLowerCase(), { id: j.customerId || Utils.uid(), name: jName, phone: '', address: '' });
+                        }
+                    });
+                    return Array.from(map.values()).sort((a, b) => (a.name || '').localeCompare(b.name || '', 'th'));
+                });
+
+                const filteredCustomerOptions = computed(() => {
+                    const q = customerSearchText.value.trim().toLowerCase();
+                    if (!q) return allKnownCustomers.value.slice(0, 12);
+                    return allKnownCustomers.value
+                        .filter(c => (c.name || '').toLowerCase().includes(q) || (c.phone || '').includes(q))
+                        .slice(0, 12);
+                });
+
+                const exactCustomerMatch = computed(() => {
+                    const q = customerSearchText.value.trim().toLowerCase();
+                    if (!q) return false;
+                    return allKnownCustomers.value.some(c => (c.name || '').trim().toLowerCase() === q);
+                });
+
+                function onCustomerInputFocus() {
+                    showCustomerSuggestions.value = true;
+                    customerSuggestionIndex.value = -1;
+                }
+
+                function onCustomerSearchInput() {
+                    showCustomerSuggestions.value = true;
+                    customerSuggestionIndex.value = 0;
+                }
+
+                function moveCustomerSuggestion(step) {
+                    showCustomerSuggestions.value = true;
+                    const len = filteredCustomerOptions.value.length;
+                    if (len === 0) return;
+                    customerSuggestionIndex.value = (customerSuggestionIndex.value + step + len) % len;
+                }
+
+                function selectCustomerFromSuggestion(c) {
+                    modalJob.value.customerId = c.id || '';
+                    customerSearchText.value = c.name;
+                    showCustomerSuggestions.value = false;
+                }
+
+                async function selectOrCreateCustomer() {
+                    const list = filteredCustomerOptions.value;
+                    if (customerSuggestionIndex.value >= 0 && customerSuggestionIndex.value < list.length) {
+                        selectCustomerFromSuggestion(list[customerSuggestionIndex.value]);
+                        return;
+                    }
+                    const text = customerSearchText.value.trim();
+                    if (!text) return;
+                    const existing = allKnownCustomers.value.find(c => (c.name || '').toLowerCase() === text.toLowerCase());
+                    if (existing) {
+                        selectCustomerFromSuggestion(existing);
+                        return;
+                    }
+                    const newC = { id: Utils.uid(), name: text, phone: '', address: '', createdAt: Date.now() };
+                    await db.customers.put(Utils.toPlain(newC));
+                    await pushRecordToCloud('customers', newC);
+                    modalJob.value.customerId = newC.id;
+                    customerSearchText.value = newC.name;
+                    showCustomerSuggestions.value = false;
+                    toast(`✅ เพิ่มลูกค้า "${text}" และเลือกในใบงานแล้ว`, 'success');
+                    await loadAll();
+                }
+
+                function hideCustomerSuggestionsDelayed() {
+                    setTimeout(() => { showCustomerSuggestions.value = false; }, 180);
+                }
+
+                function jobItemOptionLabel(item) {
+                    if (!item) return '';
+                    if (item.type === 'ฟอยล์') {
+                        const parts = [item.tankColor, item.foilName, item.width ? `${item.width}` : ''].filter(Boolean);
+                        return `${parts.join(' ')} · ${item.code}`;
+                    }
+                    return `${item.code}${item.chemType ? ' - ' + item.chemType : ''}`;
+                }
 
                 const analyticsPeriodLabel = ref('month');
                 const analytics = ref({ totalOut: 0, totalIn: 0, shippedCount: 0, customerCount: 0, topFreq: [], topQty: [] });
@@ -1401,101 +1702,352 @@
                 const transferNewLotNo = ref('');
                 const transferQty = ref('');
 
-                // ===== SUPABASE AUTO-SYNC ENGINE =====
+                // ===== SUPABASE AUTO-SYNC & PIN SECURITY ENGINE =====
                 const cloudState = ref({ enabled: false, status: 'offline', url: '', anonKey: '', lastSyncTs: null });
                 const cloudForm = ref({ url: '', anonKey: '' });
+                const pinSetupForm = ref({ pin: '' });
+                const pinSecurity = ref({
+                    isLocked: false,
+                    hasEncryptedBundle: false,
+                    pinLength: 4,
+                    inputPin: '',
+                    errorMsg: '',
+                    rememberDevice: true,
+                    activeBundleStr: ''
+                });
                 let supabaseClient = null;
+
+                function getActiveEncryptedBundle() {
+                    if (EMBEDDED_ENCRYPTED_BUNDLE && EMBEDDED_ENCRYPTED_BUNDLE.trim()) {
+                        return EMBEDDED_ENCRYPTED_BUNDLE.trim();
+                    }
+                    try {
+                        return localStorage.getItem('spp_encrypted_bundle') || '';
+                    } catch (e) {
+                        return '';
+                    }
+                }
+
+                function initPinAndSupabase() {
+                    const bundleStr = getActiveEncryptedBundle();
+                    if (bundleStr) {
+                        try {
+                            const parsed = JSON.parse(bundleStr);
+                            pinSecurity.value.hasEncryptedBundle = true;
+                            pinSecurity.value.activeBundleStr = bundleStr;
+                            pinSecurity.value.pinLength = parsed.len || 4;
+                        } catch (e) {}
+                    }
+                    try {
+                        const savedUrl = localStorage.getItem('spp_sb_url') || '';
+                        const savedKey = localStorage.getItem('spp_sb_key') || '';
+                        const unlockedSession = sessionStorage.getItem('spp_pin_unlocked') === '1' || localStorage.getItem('spp_pin_remember') === '1';
+
+                        if (pinSecurity.value.hasEncryptedBundle && (!savedUrl || !savedKey || !unlockedSession)) {
+                            pinSecurity.value.isLocked = true;
+                            return;
+                        }
+                    } catch (e) {}
+                    initSupabaseClient();
+                }
+
+                function pressPinKey(digit) {
+                    pinSecurity.value.errorMsg = '';
+                    if (pinSecurity.value.inputPin.length < 6) {
+                        pinSecurity.value.inputPin += String(digit);
+                        if (pinSecurity.value.inputPin.length === pinSecurity.value.pinLength) {
+                            setTimeout(() => unlockWithPin(), 120);
+                        }
+                    }
+                }
+
+                function pressPinBackspace() {
+                    pinSecurity.value.errorMsg = '';
+                    pinSecurity.value.inputPin = pinSecurity.value.inputPin.slice(0, -1);
+                }
+
+                async function unlockWithPin() {
+                    const pin = pinSecurity.value.inputPin.trim();
+                    if (!pin) {
+                        pinSecurity.value.errorMsg = 'กรุณากดรหัส PIN';
+                        return;
+                    }
+                    const bundleStr = pinSecurity.value.activeBundleStr || getActiveEncryptedBundle();
+                    if (bundleStr) {
+                        try {
+                            const decrypted = await CryptoPinService.decryptBundle(pin, bundleStr);
+                            if (decrypted && decrypted.url && decrypted.anonKey) {
+                                try {
+                                    localStorage.setItem('spp_sb_url', decrypted.url);
+                                    localStorage.setItem('spp_sb_key', decrypted.anonKey);
+                                    sessionStorage.setItem('spp_pin_unlocked', '1');
+                                    if (pinSecurity.value.rememberDevice) {
+                                        localStorage.setItem('spp_pin_remember', '1');
+                                    } else {
+                                        localStorage.removeItem('spp_pin_remember');
+                                    }
+                                } catch (e) {}
+                                pinSecurity.value.isLocked = false;
+                                pinSecurity.value.inputPin = '';
+                                pinSecurity.value.errorMsg = '';
+                                initSupabaseClient();
+                                toast('🔓 ปลดล็อกและเชื่อมต่อ Cloud อัตโนมัติสำเร็จ!', 'success');
+                                return;
+                            }
+                        } catch (e) {
+                            pinSecurity.value.inputPin = '';
+                            pinSecurity.value.errorMsg = '❌ รหัส PIN ไม่ถูกต้อง กรุณาลองใหม่';
+                            return;
+                        }
+                    } else {
+                        const savedPin = localStorage.getItem('spp_plain_pin') || '';
+                        if (!savedPin || savedPin === pin) {
+                            pinSecurity.value.isLocked = false;
+                            pinSecurity.value.inputPin = '';
+                            toast('🔓 ปลดล็อกหน้าจอเรียบร้อย', 'success');
+                        } else {
+                            pinSecurity.value.inputPin = '';
+                            pinSecurity.value.errorMsg = '❌ รหัส PIN ไม่ถูกต้อง';
+                        }
+                    }
+                }
+
+                function lockAppNow() {
+                    try {
+                        sessionStorage.removeItem('spp_pin_unlocked');
+                        localStorage.removeItem('spp_pin_remember');
+                    } catch (e) {}
+                    pinSecurity.value.inputPin = '';
+                    pinSecurity.value.errorMsg = '';
+                    pinSecurity.value.isLocked = true;
+                    closeModal('cloudSync');
+                }
+
+                async function buildEmbeddedHtmlString() {
+                    const url = cleanSupabaseUrl(cloudForm.value.url || cloudState.value.url || '');
+                    const anonKey = cleanSupabaseKey(cloudForm.value.anonKey || cloudState.value.anonKey || '');
+                    const pin = (pinSetupForm.value.pin || '').trim();
+                    if (!url || !anonKey) {
+                        toast('⚠️ กรุณากรอก Supabase Project URL และ Anon Key ก่อน', 'error');
+                        return null;
+                    }
+                    if (!/^\d{4,6}$/.test(pin)) {
+                        toast('⚠️ กรุณาตั้งรหัส PIN เป็นตัวเลข 4 ถึง 6 หลัก', 'error');
+                        return null;
+                    }
+                    const bundleJson = await CryptoPinService.encryptBundle(pin, { url, anonKey });
+                    try {
+                        localStorage.setItem('spp_encrypted_bundle', bundleJson);
+                        localStorage.setItem('spp_sb_url', url);
+                        localStorage.setItem('spp_sb_key', anonKey);
+                        sessionStorage.setItem('spp_pin_unlocked', '1');
+                        localStorage.setItem('spp_pin_remember', '1');
+                    } catch (e) {}
+                    pinSecurity.value.hasEncryptedBundle = true;
+                    pinSecurity.value.activeBundleStr = bundleJson;
+                    pinSecurity.value.pinLength = pin.length;
+                    await initSupabaseClient();
+
+                    const escapedBundle = bundleJson.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
+                    return RAW_TEMPLATE_HTML.replace(
+                        /const EMBEDDED_ENCRYPTED_BUNDLE = ".*?";/,
+                        `const EMBEDDED_ENCRYPTED_BUNDLE = "${escapedBundle}";`
+                    );
+                }
+
+                async function generateAndDownloadEncryptedHtml() {
+                    try {
+                        const updatedHtml = await buildEmbeddedHtmlString();
+                        if (!updatedHtml) return;
+                        const blob = new Blob([updatedHtml], { type: 'text/html;charset=utf-8' });
+                        const dlUrl = URL.createObjectURL(blob);
+                        const a = document.createElement('a');
+                        a.href = dlUrl;
+                        a.download = 'index.html';
+                        a.click();
+                        URL.revokeObjectURL(dlUrl);
+                        toast('🔐 เข้ารหัสคีย์ด้วย PIN และดาวน์โหลดไฟล์ index.html เรียบร้อย! นำไปอัปขึ้น GitHub ได้เลย', 'success');
+                    } catch (e) {
+                        toast('❌ เกิดข้อผิดพลาด: ' + e.message, 'error');
+                    }
+                }
+
+                async function generateAndCopyEncryptedHtml() {
+                    try {
+                        const updatedHtml = await buildEmbeddedHtmlString();
+                        if (!updatedHtml) return;
+                        await navigator.clipboard.writeText(updatedHtml);
+                        toast('📋 คัดลอกโค้ด index.html (ที่ฝังคีย์เข้ารหัส PIN แล้ว) เรียบร้อย! นำไปวางทับใน GitHub ได้เลย', 'success');
+                    } catch (e) {
+                        toast('❌ คัดลอกไม่สำเร็จ: ' + e.message, 'error');
+                    }
+                }
 
                 const cloudStatusText = computed(() => {
                     if (!cloudState.value.enabled) return 'โหมดในเครื่อง (คลิกผูก Cloud ฟรี)';
                     if (cloudState.value.status === 'syncing') return 'กำลังซิงค์ Cloud...';
-                    if (cloudState.value.status === 'online') return 'Cloud ซิงค์อัตโนมัติ';
-                    return 'ซิงค์ขัดข้อง';
+                    if (cloudState.value.status === 'online') {
+                        const cnt = cloudState.value.cloudCount;
+                        return cnt !== undefined ? `Cloud ซิงค์แล้ว (${cnt} รายการ)` : 'Cloud ซิงค์อัตโนมัติ';
+                    }
+                    return 'ซิงค์ขัดข้อง (คลิกดูสาเหตุ)';
                 });
 
-                function initSupabaseClient() {
+                // รองรับทั้งชื่อตาราง stockpro_records (PK: id) และ stock_pro_records (PK: table_name, record_id)
+                let activeCloudTable = 'stockpro_records';
+                let useCompositePk = false;
+
+                async function detectCloudTableSchema() {
+                    if (!supabaseClient) return false;
+                    // ลองเช็คตาราง stockpro_records ก่อน
+                    const res1 = await supabaseClient.from('stockpro_records').select('table_name').limit(1);
+                    if (!res1.error) {
+                        activeCloudTable = 'stockpro_records';
+                        useCompositePk = false;
+                        return true;
+                    }
+                    // ลองเช็คตาราง stock_pro_records (แบบมีขีดล่าง)
+                    const res2 = await supabaseClient.from('stock_pro_records').select('table_name').limit(1);
+                    if (!res2.error) {
+                        activeCloudTable = 'stock_pro_records';
+                        useCompositePk = true;
+                        return true;
+                    }
+                    const errMsg = res1.error?.message || res2.error?.message || 'ไม่พบตารางใน Supabase';
+                    if (errMsg.includes('does not exist') || errMsg.includes('schema cache') || errMsg.includes('42P01')) {
+                        throw new Error('ยังไม่ได้สร้างตารางใน Supabase! กรุณากดปุ่ม "คัดลอกคำสั่ง SQL" แล้วนำไปวางกด Run ในเมนู SQL Editor ของ Supabase');
+                    }
+                    throw new Error(errMsg);
+                }
+
+                function formatRowForCloud(tableName, record) {
+                    const base = {
+                        table_name: tableName,
+                        record_id: String(record.id),
+                        payload: Utils.toPlain(record),
+                        updated_at: Date.now()
+                    };
+                    if (!useCompositePk) {
+                        base.id = `${tableName}:${record.id}`;
+                    }
+                    return base;
+                }
+
+                async function upsertRowsToCloud(rows) {
+                    if (!supabaseClient || rows.length === 0) return;
+                    const opts = useCompositePk ? { onConflict: 'table_name,record_id' } : { onConflict: 'id' };
+                    const { error } = await supabaseClient.from(activeCloudTable).upsert(rows, opts);
+                    if (error) {
+                        // fallback without onConflict option if schema differs
+                        const resFallback = await supabaseClient.from(activeCloudTable).upsert(rows);
+                        if (resFallback.error) throw resFallback.error;
+                    }
+                }
+
+                async function initSupabaseClient() {
                     try {
-                        const savedUrl = localStorage.getItem('spp_sb_url') || '';
-                        const savedKey = localStorage.getItem('spp_sb_key') || '';
+                        const savedUrl = cleanSupabaseUrl(localStorage.getItem('spp_sb_url') || '');
+                        const savedKey = cleanSupabaseKey(localStorage.getItem('spp_sb_key') || '');
                         cloudForm.value = { url: savedUrl, anonKey: savedKey };
                         if (savedUrl && savedKey && window.supabase) {
                             supabaseClient = window.supabase.createClient(savedUrl, savedKey);
                             cloudState.value.enabled = true;
                             cloudState.value.url = savedUrl;
                             cloudState.value.anonKey = savedKey;
-                            cloudState.value.status = 'online';
+                            cloudState.value.lastError = '';
+                            await syncNowBothWays(true);
                             subscribeRealtime();
-                            pullAllFromCloud(true);
                         }
                     } catch (e) {
-                        console.warn('Supabase init error:', e);
+                        cloudState.value.status = 'error';
+                        cloudState.value.lastError = e.message || String(e);
                     }
                 }
 
                 function subscribeRealtime() {
                     if (!supabaseClient) return;
-                    supabaseClient.channel('stockpro-realtime')
-                        .on('postgres_changes', { event: '*', schema: 'public', table: 'stockpro_records' }, () => {
-                            pullAllFromCloud(true);
-                        })
-                        .subscribe();
+                    try {
+                        supabaseClient.channel('stockpro-realtime-v74')
+                            .on('postgres_changes', { event: '*', schema: 'public', table: activeCloudTable }, () => {
+                                pullAllFromCloud(true);
+                            })
+                            .subscribe();
+                    } catch (e) {}
                 }
 
                 async function pushRecordToCloud(tableName, record) {
                     if (!supabaseClient || !cloudState.value.enabled) return;
                     try {
                         cloudState.value.status = 'syncing';
-                        await supabaseClient.from('stockpro_records').upsert({
-                            id: `${tableName}:${record.id}`,
-                            table_name: tableName,
-                            record_id: record.id,
-                            payload: Utils.toPlain(record),
-                            updated_at: Date.now()
-                        });
+                        await detectCloudTableSchema();
+                        await upsertRowsToCloud([formatRowForCloud(tableName, record)]);
                         cloudState.value.status = 'online';
+                        cloudState.value.lastError = '';
                         cloudState.value.lastSyncTs = Date.now();
                     } catch (e) {
                         cloudState.value.status = 'error';
+                        cloudState.value.lastError = e.message || 'ส่งข้อมูลขึ้น Cloud ไม่สำเร็จ';
+                        toast('❌ ซิงค์ไม่สำเร็จ: ' + cloudState.value.lastError, 'error');
                     }
                 }
 
-                async function pushAllToCloud() {
+                async function pushAllToCloud(silent = false) {
                     if (!supabaseClient) return;
                     try {
                         cloudState.value.status = 'syncing';
+                        await detectCloudTableSchema();
                         const rows = [];
-                        const addRows = (tName, arr) => arr.forEach(r => rows.push({ id: `${tName}:${r.id}`, table_name: tName, record_id: r.id, payload: Utils.toPlain(r), updated_at: Date.now() }));
+                        const addRows = (tName, arr) => arr.forEach(r => rows.push(formatRowForCloud(tName, r)));
                         addRows('items', items.value);
                         addRows('batches', batches.value);
                         addRows('transactions', transactions.value);
                         addRows('jobs', jobs.value);
                         addRows('customers', customers.value);
                         if (rows.length > 0) {
-                            const { error } = await supabaseClient.from('stockpro_records').upsert(rows);
-                            if (error) throw error;
+                            await upsertRowsToCloud(rows);
                         }
                         cloudState.value.status = 'online';
+                        cloudState.value.lastError = '';
+                        cloudState.value.cloudCount = rows.length;
                         cloudState.value.lastSyncTs = Date.now();
-                        toast(`☁️ ซิงค์ข้อมูล ${rows.length} รายการขึ้น Supabase สำเร็จ`, 'success');
+                        if (!silent) toast(`☁️ ส่งข้อมูล ${rows.length} รายการขึ้น Supabase สำเร็จ!`, 'success');
                     } catch (e) {
                         cloudState.value.status = 'error';
-                        toast('❌ ซิงค์ขึ้น Cloud ไม่สำเร็จ: ' + (e.message || ''), 'error');
+                        cloudState.value.lastError = e.message || 'ส่งข้อมูลขึ้น Cloud ไม่สำเร็จ';
+                        if (!silent) toast('❌ ส่งขึ้น Cloud ไม่สำเร็จ: ' + cloudState.value.lastError, 'error');
                     }
                 }
 
                 async function pullAllFromCloud(silent = false) {
-                    if (!supabaseClient) return;
+                    if (!supabaseClient) return false;
                     try {
                         cloudState.value.status = 'syncing';
-                        const { data, error } = await supabaseClient.from('stockpro_records').select('*');
+                        await detectCloudTableSchema();
+                        const { data, error } = await supabaseClient.from(activeCloudTable).select('*');
                         if (error) throw error;
-                        if (data && data.length > 0) {
+                        const cloudRows = data || [];
+                        cloudState.value.cloudCount = cloudRows.length;
+                        if (cloudRows.length > 0) {
                             const byTable = { items: [], batches: [], transactions: [], jobs: [], customers: [] };
-                            data.forEach(row => {
-                                if (byTable[row.table_name] && row.payload) byTable[row.table_name].push(row.payload);
+                            cloudRows.forEach(row => {
+                                if (byTable[row.table_name] && row.payload) {
+                                    byTable[row.table_name].push(row.payload);
+                                }
                             });
                             await db.transaction('rw', [db.items, db.batches, db.transactions, db.jobs, db.customers], async () => {
-                                if (byTable.items.length) await db.items.bulkPut(byTable.items);
+                                if (byTable.items.length > 0) {
+                                    // ป้องกันสินค้าเริ่มต้นซ้ำกันคนละ ID ระหว่างเครื่อง
+                                    const cloudCodes = new Set(byTable.items.map(i => (i.code || '').trim().toUpperCase()));
+                                    const cloudIds = new Set(byTable.items.map(i => i.id));
+                                    const localItems = await db.items.toArray();
+                                    for (const loc of localItems) {
+                                        const codeKey = (loc.code || '').trim().toUpperCase();
+                                        if (cloudCodes.has(codeKey) && !cloudIds.has(loc.id)) {
+                                            await db.items.delete(loc.id);
+                                        }
+                                    }
+                                    await db.items.bulkPut(byTable.items);
+                                }
                                 if (byTable.batches.length) await db.batches.bulkPut(byTable.batches);
                                 if (byTable.transactions.length) await db.transactions.bulkPut(byTable.transactions);
                                 if (byTable.jobs.length) await db.jobs.bulkPut(byTable.jobs);
@@ -1504,26 +2056,46 @@
                             await loadAll();
                         }
                         cloudState.value.status = 'online';
+                        cloudState.value.lastError = '';
                         cloudState.value.lastSyncTs = Date.now();
-                        if (!silent) toast('☁️ ดึงข้อมูลล่าสุดจาก Cloud เรียบร้อย', 'success');
+                        if (!silent) toast(`☁️ ดึงข้อมูลจาก Cloud สำเร็จ (${cloudRows.length} รายการ)`, 'success');
+                        return cloudRows.length > 0;
                     } catch (e) {
                         cloudState.value.status = 'error';
-                        if (!silent) toast('❌ ดึงข้อมูลจาก Cloud ไม่สำเร็จ: ' + (e.message || ''), 'error');
+                        cloudState.value.lastError = e.message || 'ดึงข้อมูลจาก Cloud ไม่สำเร็จ';
+                        if (!silent) toast('❌ ดึงข้อมูลจาก Cloud ไม่สำเร็จ: ' + cloudState.value.lastError, 'error');
+                        return false;
                     }
                 }
 
-                function saveCloudConfig() {
-                    const url = cloudForm.value.url.trim();
-                    const key = cloudForm.value.anonKey.trim();
+                // ดึงข้อมูลจาก Cloud ก่อน แล้วค่อยส่งข้อมูลในเครื่องที่ยังไม่มีบน Cloud ขึ้นไป
+                async function syncNowBothWays(silent = false) {
+                    if (!supabaseClient) return;
+                    const hadCloudData = await pullAllFromCloud(true);
+                    if (cloudState.value.status !== 'error') {
+                        await pushAllToCloud(true);
+                        if (!silent) {
+                            toast(`☁️ ซิงค์ข้อมูลสองทางสำเร็จ (${cloudState.value.cloudCount || 0} รายการ)`, 'success');
+                        }
+                    }
+                }
+
+                async function saveCloudConfig() {
+                    const url = cleanSupabaseUrl(cloudForm.value.url);
+                    const key = cleanSupabaseKey(cloudForm.value.anonKey);
                     if (!url || !key) { toast('กรุณากรอก Supabase URL และ Anon Key', 'error'); return; }
+                    cloudForm.value.url = url;
+                    cloudForm.value.anonKey = key;
                     try {
                         localStorage.setItem('spp_sb_url', url);
                         localStorage.setItem('spp_sb_key', key);
-                        initSupabaseClient();
-                        pushAllToCloud();
-                        closeModal('cloudSync');
+                        await initSupabaseClient();
+                        if (!cloudState.value.lastError) {
+                            closeModal('cloudSync');
+                            toast('☁️ เชื่อมต่อและซิงค์ข้อมูลกับ Supabase สำเร็จ!', 'success');
+                        }
                     } catch (e) {
-                        toast('❌ บันทึกการตั้งค่าไม่สำเร็จ', 'error');
+                        toast('❌ บันทึกการตั้งค่าไม่สำเร็จ: ' + e.message, 'error');
                     }
                 }
 
@@ -1533,7 +2105,7 @@
                         localStorage.removeItem('spp_sb_key');
                     } catch (e) {}
                     supabaseClient = null;
-                    cloudState.value = { enabled: false, status: 'offline', url: '', anonKey: '', lastSyncTs: null };
+                    cloudState.value = { enabled: false, status: 'offline', url: '', anonKey: '', lastSyncTs: null, lastError: '', cloudCount: 0 };
                     toast('ตัดการเชื่อมต่อ Cloud แล้ว', 'warning');
                     closeModal('cloudSync');
                 }
@@ -1547,9 +2119,10 @@
   updated_at BIGINT
 );
 ALTER TABLE public.stockpro_records ENABLE ROW LEVEL SECURITY;
+DROP POLICY IF EXISTS "Allow public access" ON public.stockpro_records;
 CREATE POLICY "Allow public access" ON public.stockpro_records FOR ALL USING (true) WITH CHECK (true);`;
                     navigator.clipboard?.writeText(sql);
-                    toast('📋 คัดลอกคำสั่ง SQL แล้ว! นำไปวางใน Supabase SQL Editor ได้เลย', 'success');
+                    toast('📋 คัดลอกคำสั่ง SQL แล้ว! นำไปวางในเมนู SQL Editor ของ Supabase แล้วกด Run ได้เลย', 'success');
                 }
 
                 // ===== THEME =====
@@ -1923,8 +2496,9 @@ CREATE POLICY "Allow public access" ON public.stockpro_records FOR ALL USING (tr
                         { code: "WANOL F3156A", type: "เคมีภัณฑ์", chemType: "POLYETHER POLYOL", location: "WH1", minStock: 6, tankColor: "เขียว", netWeight: 210, unitLabel: "ถัง", shelfLifeMonths: 12 },
                         { code: "MC", type: "เคมีภัณฑ์", chemType: "Dichloromethane", location: "WH2", minStock: 6, tankColor: "น้ำเงิน", netWeight: 270, unitLabel: "ถัง", shelfLifeMonths: 12 }
                     ];
-                    for (const d of defaults) {
-                        await db.items.add({ id: Utils.uid(), ...d, note: '', createdAt: Date.now() });
+                    for (let idx = 0; idx < defaults.length; idx++) {
+                        const d = defaults[idx];
+                        await db.items.put({ id: `seed-sku-${idx + 1}`, ...d, note: '', createdAt: 1700000000000 + idx });
                     }
                 }
 
@@ -2180,6 +2754,11 @@ CREATE POLICY "Allow public access" ON public.stockpro_records FOR ALL USING (tr
                     await pushRecordToCloud('customers', payload);
                     toast('✅ บันทึกข้อมูลลูกค้าเรียบร้อย', 'success');
                     closeModal('customer');
+                    if (modals.value.job) {
+                        modalJob.value.customerId = payload.id;
+                        customerSearchText.value = payload.name;
+                        showCustomerSuggestions.value = false;
+                    }
                     await loadAll();
                 }
 
@@ -2669,17 +3248,29 @@ CREATE POLICY "Allow public access" ON public.stockpro_records FOR ALL USING (tr
                     } catch (e) {}
                     await seedDefaultData();
                     await loadAll();
-                    initSupabaseClient();
+                    initPinAndSupabase();
                     broadcastChannel.onmessage = (ev) => { if (ev.data?.type === 'DATA_CHANGED') loadAll(); };
+                    window.addEventListener('keydown', (e) => {
+                        if (!pinSecurity.value.isLocked) return;
+                        if (/^[0-9]$/.test(e.key)) { e.preventDefault(); pressPinKey(e.key); }
+                        else if (e.key === 'Backspace') { e.preventDefault(); pressPinBackspace(); }
+                        else if (e.key === 'Enter') { e.preventDefault(); unlockWithPin(); }
+                    });
                 });
 
                 return {
+                    appVersion: APP_VERSION,
+                    pinSecurity, pinSetupForm, pressPinKey, pressPinBackspace, unlockWithPin, lockAppNow,
+                    generateAndDownloadEncryptedHtml, generateAndCopyEncryptedHtml,
                     currentTab, tabs, items, activeItems, batches, transactions, jobs, customers, backups,
                     sidebarOpen, fabOpen, themeMode, accentTheme, accentOptions, toggleTheme, setAccent,
                     globalSearch, globalSearchEnter,
                     stockSearch, stockTypeFilter, stockStatusFilter, filteredStockItems, stockStats, expiryAlerts,
                     jobFilter, jobSearch, jobCounts, filteredJobs,
                     customerSearch, customerSearchText, filteredCustomers, filteredCustomersList,
+                    showCustomerSuggestions, customerSuggestionIndex, filteredCustomerOptions, exactCustomerMatch,
+                    onCustomerInputFocus, onCustomerSearchInput, moveCustomerSuggestion, selectCustomerFromSuggestion,
+                    selectOrCreateCustomer, hideCustomerSuggestionsDelayed, jobItemOptionLabel,
                     analyticsPeriodLabel, analytics, loadAnalytics, topProducts,
                     historyPeriod, historyFilter, filteredHistoryView, historySummary, recentTransactions,
                     resetHistoryFilters, exportHistory, getBatchLabel,
@@ -2693,7 +3284,7 @@ CREATE POLICY "Allow public access" ON public.stockpro_records FOR ALL USING (tr
                     saveJob, shipJob, reverseShipmentPrompt, cancelJob, saveCustomer, deleteCustomer,
                     createBackup, triggerRestore, restoreBackup, stockFileData, onStockFileChange, importStockCount,
                     openScanner, stopScanner,
-                    cloudState, cloudForm, cloudStatusText, saveCloudConfig, disconnectCloud, pushAllToCloud, pullAllFromCloud, copySupabaseSql,
+                    cloudState, cloudForm, cloudStatusText, saveCloudConfig, disconnectCloud, pushAllToCloud, pullAllFromCloud, syncNowBothWays, copySupabaseSql,
                     getBalance, getBatches, getItemObj, getItemCode, itemDisplayName, itemLocationOrSize,
                     formatNum: Utils.fmtNum, formatDateTime: Utils.fmtDateTime, formatTime: Utils.fmtTime
                 };
